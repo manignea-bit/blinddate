@@ -139,12 +139,12 @@ return<div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90,anim
 
 // ═══ BLIND CHAT WITH BONUSES ═══
 function BlindChat({chatId,myUid,partner,bonuses,setBonuses,onTimeUp}){const T=useT();const[msgs,sM]=useState([]);const[inp,sI]=useState("");const[tl,sTl]=useState(CHAT_DUR);const[reveals,sR]=useState([]);const cr=useRef(null);const ir=useRef(null);
-useEffect(()=>{const q=query(collection(db,"blindChats",chatId,"messages"),orderBy("createdAt","asc"));return onSnapshot(q,s=>sM(s.docs.map(d=>({id:d.id,...d.data()}))))},[chatId]);
+useEffect(()=>{const q=query(collection(db,"blindChats",chatId,"messages"),orderBy("createdAt","asc"));return onSnapshot(q,s=>{const all=s.docs.map(d=>({id:d.id,...d.data()}));sM(all);s.docChanges().forEach(c=>{if(c.type==="added"&&c.doc.data().bonusTime&&c.doc.data().senderId!==myUid){sTl(t=>t+c.doc.data().bonusTime)}})})},[chatId,myUid]);
 useEffect(()=>{const t=setInterval(()=>{sTl(s=>{if(s<=1){clearInterval(t);onTimeUp();return 0}return s-1})},1000);return()=>clearInterval(t)},[onTimeUp]);
 useEffect(()=>{if(cr.current)cr.current.scrollTop=cr.current.scrollHeight},[msgs,reveals]);
 
-function useBonus(id){const c=bonuses[id]||0;if(c<=0)return;const nb={...bonuses,[id]:c-1};setBonuses(nb);updateDoc(doc(db,"users",myUid),{bonuses:nb});
-if(id==="time")sTl(s=>s+30);
+async function useBonus(id){const c=bonuses[id]||0;if(c<=0)return;const nb={...bonuses,[id]:c-1};setBonuses(nb);await updateDoc(doc(db,"users",myUid),{bonuses:nb});
+if(id==="time"){sTl(s=>s+30);await addDoc(collection(db,"blindChats",chatId,"messages"),{senderId:"system",text:"⏱️ +30 secondes ajoutées !",createdAt:serverTimestamp(),bonusTime:30})}
 if(id==="city"&&partner)sR(r=>[...r,{type:"city",text:`📍 L'autre personne vit à ${partner.city}`}]);
 if(id==="peek"&&partner){const int=partner.interests?.[Math.floor(Math.random()*partner.interests.length)];sR(r=>[...r,{type:"peek",text:`👀 Un de ses intérêts : ${int||"?"}`}])}
 if(id==="ice"){const q=ICEBREAKERS[Math.floor(Math.random()*ICEBREAKERS.length)];addDoc(collection(db,"blindChats",chatId,"messages"),{senderId:"system",text:`🎲 Brise-glace : ${q}`,createdAt:serverTimestamp()})}
@@ -186,7 +186,8 @@ async function decide(d){const s=await getDoc(doc(db,"blindChats",cid));const dt
 
 async function resolve(mine,theirs){if(mine==="match"&&theirs==="match"){await addDoc(collection(db,"matches"),{users:[user.uid,ouid],createdAt:serverTimestamp()});const s=await getDoc(doc(db,"users",ouid));sOprof(s.exists()?s.data():{name:"?"});sScr("matchReveal")}else if(mine==="match"&&theirs!=="match"&&hasDouble){await addDoc(collection(db,"matches"),{users:[user.uid,ouid],createdAt:serverTimestamp()});const s=await getDoc(doc(db,"users",ouid));sOprof(s.exists()?s.data():{name:"?"});sScr("matchReveal")}else sScr("noMatch")}
 
-function useBonusChat(id){if(id==="double")sHasDouble(true);const nb={...bonuses,[id]:(bonuses[id]||0)-1};sBonuses(nb)}
+
+async function useBonusChat(id){if(id==="double")sHasDouble(true);const nb={...bonuses,[id]:(bonuses[id]||0)-1};sBonuses(nb);await updateDoc(doc(db,"users",user.uid),{bonuses:nb})}
 
 return<ThemeCtx.Provider value={T2}><div style={{minHeight:"100vh",background:T2.bg,backgroundImage:T2.bgGrad,color:T2.text,transition:"background .5s,color .3s"}}>
 <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap');*{box-sizing:border-box;margin:0}body{background:${T2.bg};transition:background .5s;overflow-x:hidden}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:${T2.border};border-radius:4px}@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes glow{0%,100%{box-shadow:0 4px 28px ${T2.accentGlow}}50%{box-shadow:0 4px 40px ${T2.accentGlow},0 0 60px ${T2.accentGlow}}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}input::placeholder,textarea::placeholder{color:${T2.textD}}`}</style>
