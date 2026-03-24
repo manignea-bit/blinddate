@@ -13,6 +13,7 @@ const WAIT_TIMEOUT = 60;
 const DECISION_TIMEOUT = 30;
 const XP_CHAT = 5;
 const XP_MATCH = 20;
+const XP_PERSONALITY = 10;
 const DEF_BONUS = { city:3, ice:3, peek:3, anon:3 };
 const STREAK_MILESTONES = {3:2, 7:5, 14:10, 30:20};
 
@@ -30,18 +31,18 @@ const BONUS_TYPES = {
 };
 const PERSONALITY_Q = {
   en: [
-    {q:"Are you more spontaneous or organized?",a:["🎲 Spontaneous","📋 Organized"]},
-    {q:"Nights in or nights out?",a:["🏠 Staying in","🎉 Going out"]},
-    {q:"Heart or head?",a:["❤️ Heart first","🧠 Head first"]},
-    {q:"Your humor style?",a:["😂 Silly & chaotic","😏 Dry & sarcastic"]},
-    {q:"Morning or night?",a:["☀️ Early bird","🌙 Night owl"]},
+    {q:"Ideal first date energy?",a:["☕ Deep convo over coffee","🎳 Fun activity & laughs"]},
+    {q:"Do you catch feelings fast?",a:["💘 Way too fast","🧊 Takes a while"]},
+    {q:"Your texting style?",a:["📱 Always online","😌 I reply when I feel like it"]},
+    {q:"Jealousy in a relationship?",a:["🙅 Big red flag","😏 A little is kinda cute"]},
+    {q:"What do you lead with?",a:["😂 Humor & vibes","🔥 Intensity & depth"]},
   ],
   fr: [
-    {q:"Tu es plutôt spontané·e ou organisé·e ?",a:["🎲 Spontané·e","📋 Organisé·e"]},
-    {q:"Soirée canapé ou sortie ?",a:["🏠 Rester à la maison","🎉 Sortir"]},
-    {q:"Le cœur ou la tête ?",a:["❤️ Le cœur","🧠 La tête"]},
-    {q:"Ton humour ?",a:["😂 Absurde","😏 Pince-sans-rire"]},
-    {q:"Matin ou nuit ?",a:["☀️ Lève-tôt","🌙 Couche-tard"]},
+    {q:"Énergie idéale pour un premier date ?",a:["☕ Café et vraies discussions","🎳 Activité fun et rires"]},
+    {q:"Tu tombes amoureux·se vite ?",a:["💘 Trop vite","🧊 Ça prend du temps"]},
+    {q:"Ton style de textos ?",a:["📱 Toujours dispo","😌 Je réponds quand j'ai envie"]},
+    {q:"La jalousie dans une relation ?",a:["🙅 Gros red flag","😏 Un peu c'est mignon"]},
+    {q:"Tu joues sur quoi ?",a:["😂 L'humour et le fun","🔥 L'intensité et la profondeur"]},
   ]
 };
 const CHALLENGES = {
@@ -71,6 +72,7 @@ const CHALLENGES = {
   ]
 };
 const SPECIAL_EVENTS = [
+  {id:"launch",emoji:"🚀",months:[3,4,5],days:null,label:{en:"Grand Launch — Double XP!",fr:"Grand Lancement — XP ×2 !"},color:"#6c5ce7",doubleXP:true},
   {id:"valentine",emoji:"💝",months:[2],days:[13,14,15],label:{en:"Valentine's Day 💕",fr:"Saint-Valentin 💕"},color:"#e8265c"},
   {id:"halloween",emoji:"🎃",months:[10],days:[29,30,31],label:{en:"Spooky blind dates 🎃",fr:"Dates flippants 🎃"},color:"#ff6b3d"},
   {id:"newyear",emoji:"🎆",months:[12,1],days:[31,1],label:{en:"New Year sparks ✨",fr:"Étincelles du Nouvel An ✨"},color:"#6c5ce7"},
@@ -109,6 +111,9 @@ const TR = {
     referralTitle:"Invite a friend",referralDesc:"Share your code — you both get +3 bonus credits!",
     referralCopy:"Copy invite link",referralCopied:"Copied! 🎉",
     referralApplied:"Referral bonus applied 🎉",
+    locDetect:"📍 Use my location",locDetecting:"Detecting…",locErr:"Couldn't detect city — type it manually",
+    doubleXPNote:"✨ Double XP active on profile completion!",
+    launchTitle:"We just launched 🚀",launchSub:"Complete your profile during launch to earn double XP",
   },
   fr: {
     tagline:"60 secondes pour une connexion",or:"ou",firstName:"Prénom",email:"Email",password:"Mot de passe",
@@ -141,6 +146,9 @@ const TR = {
     referralTitle:"Inviter un ami",referralDesc:"Partage ton code — vous gagnez tous les deux +3 crédits !",
     referralCopy:"Copier le lien d'invitation",referralCopied:"Copié ! 🎉",
     referralApplied:"Bonus de parrainage appliqué 🎉",
+    locDetect:"📍 Ma position",locDetecting:"Détection…",locErr:"Impossible de détecter — écris ta ville",
+    doubleXPNote:"✨ Double XP actif sur la complétion du profil !",
+    launchTitle:"On vient de lancer 🚀",launchSub:"Complète ton profil pendant le lancement pour gagner double XP",
   }
 };
 
@@ -154,23 +162,14 @@ function useL() { return useContext(LC); }
 
 // ── UTILS ──
 
-async function upImg(f) {
+async function upImg(f, detectFaces) {
   const fd = new FormData();
   fd.append("file",f); fd.append("upload_preset",CLD.p); fd.append("folder","blinddate");
+  if (detectFaces) fd.append("faces","true");
   const r = await fetch(`https://api.cloudinary.com/v1_1/${CLD.c}/image/upload`,{method:"POST",body:fd});
   if (!r.ok) throw new Error("Upload failed");
-  return (await r.json()).secure_url;
-}
-
-async function verifyFace(file) {
-  if (!("FaceDetector" in window)) return true;
-  try {
-    const bmp = await createImageBitmap(file);
-    const detector = new window.FaceDetector({fastMode:true,maxDetectedFaces:1});
-    const faces = await detector.detect(bmp);
-    bmp.close?.();
-    return faces.length > 0;
-  } catch { return true; }
+  const json = await r.json();
+  return detectFaces ? {url:json.secure_url, faces:json.faces||[]} : json.secure_url;
 }
 
 function calcCompatibility(a=[], b=[]) {
@@ -410,11 +409,25 @@ function Setup({user,onDone}) {
   const [preview,setPreview]=useState(null);
   const [uploading,setUploading]=useState(false);
   const [faceChecking,setFaceChecking]=useState(false);
+  const [locating,setLocating]=useState(false);
   const [err,setErr]=useState("");
   const fileRef=useRef(null);
   const ints=INTS[lang];
   const pqs=PERSONALITY_Q[lang];
   const TOTAL=5;
+
+  async function detectCity() {
+    setLocating(true); setErr("");
+    try {
+      const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
+      const {latitude,longitude} = pos.coords;
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+      const d = await r.json();
+      const name = d.address?.city||d.address?.town||d.address?.village||d.address?.county||"";
+      if (name) setCity(name); else setErr(t.locErr);
+    } catch { setErr(t.locErr); }
+    setLocating(false);
+  }
 
   function validate() {
     setErr("");
@@ -428,18 +441,17 @@ function Setup({user,onDone}) {
 
   async function finish() {
     if (!validate()) return;
-    setUploading(true);
+    setUploading(true); setFaceChecking(true);
     try {
-      setFaceChecking(true);
-      const faceOk=await verifyFace(photoFile);
+      const {url,faces} = await upImg(photoFile, true);
       setFaceChecking(false);
-      if (!faceOk){setErr(t.errFace);setUploading(false);return;}
-      const url=await upImg(photoFile);
-      const data={age:parseInt(age),city:city.trim(),bio:bio.trim(),interests,personality,photos:[url],profileComplete:true,bonuses:DEF_BONUS,xp:0};
+      if (faces.length===0){setErr(t.errFace);setUploading(false);return;}
+      const activeEv=getActiveEvent();
+      const xpGain=activeEv?.doubleXP ? XP_PERSONALITY*2 : XP_PERSONALITY;
+      const data={age:parseInt(age),city:city.trim(),bio:bio.trim(),interests,personality,photos:[url],profileComplete:true,bonuses:DEF_BONUS,xp:xpGain};
       await updateDoc(doc(db,"users",user.uid),data);
       onDone({name:user.displayName,...data});
-    } catch(e){setFaceChecking(false);setErr(e.message);}
-    setUploading(false);
+    } catch(e){setFaceChecking(false);setErr(e.message);setUploading(false);}
   }
 
   function next(){if(validate()){step===4?finish():setStep(s=>s+1);}}
@@ -458,7 +470,10 @@ function Setup({user,onDone}) {
         {step===0&&<>
           <Label>{t.age}</Label>
           <input type="number" min={18} value={age} onChange={e=>setAge(e.target.value)} style={{...inp,width:100,marginBottom:18}}/>
-          <Label>{t.city}</Label>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+            <Label style={{marginBottom:0}}>{t.city}</Label>
+            <button onClick={detectCity} disabled={locating} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 10px",fontFamily:"'Nunito'",fontSize:11,fontWeight:700,color:T.textS,cursor:"pointer",opacity:locating?0.6:1}}>{locating?t.locDetecting:t.locDetect}</button>
+          </div>
           <input value={city} onChange={e=>setCity(e.target.value)} placeholder="Paris..." style={inp}/>
         </>}
         {step===1&&<>
@@ -524,10 +539,26 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
       </div>
     </div>
 
-    {event&&<div style={{padding:"12px 18px",borderRadius:16,marginBottom:14,background:`${event.color}15`,border:`1.5px solid ${event.color}40`,display:"flex",alignItems:"center",gap:10}}>
-      <span style={{fontSize:22}}>{event.emoji}</span>
-      <span style={{fontFamily:"'Nunito'",fontSize:13,fontWeight:700,color:event.color}}>{event.label[lang]}</span>
-    </div>}
+    {event&&(event.id==="launch"
+      ?<div style={{padding:"18px 20px",borderRadius:20,marginBottom:16,background:`linear-gradient(135deg,${event.color}22,${event.color}08)`,border:`1.5px solid ${event.color}50`,position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-18,right:-18,fontSize:80,opacity:.06,userSelect:"none",pointerEvents:"none"}}>🚀</div>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
+          <span style={{fontSize:28}}>🚀</span>
+          <div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:700,color:event.color}}>{t.launchTitle}</div>
+            <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textS,marginTop:1}}>{t.launchSub}</div>
+          </div>
+        </div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:`${event.color}18`,border:`1px solid ${event.color}40`}}>
+          <span style={{fontSize:13}}>✨</span>
+          <span style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:800,color:event.color}}>{t.doubleXPNote}</span>
+        </div>
+      </div>
+      :<div style={{padding:"12px 18px",borderRadius:16,marginBottom:14,background:`${event.color}15`,border:`1.5px solid ${event.color}40`,display:"flex",alignItems:"center",gap:10}}>
+        <span style={{fontSize:22}}>{event.emoji}</span>
+        <span style={{fontFamily:"'Nunito'",fontSize:13,fontWeight:700,color:event.color}}>{event.label[lang]}</span>
+      </div>
+    )}
 
     <Card style={{padding:"14px 18px",marginBottom:14}}><XPBar xp={profile.xp||0}/></Card>
 
@@ -664,7 +695,21 @@ function ProfileTab({user,profile,setProfile,onLogout,lang,setLang,thm,setTheme}
   const [ph,setPh]=useState(profile.photos||[]);
   const [saving,setSaving]=useState(false);
   const [upIdx,setUpIdx]=useState(-1);
+  const [locating,setLocating]=useState(false);
   const ints=INTS[lang];
+
+  async function detectCity() {
+    setLocating(true);
+    try {
+      const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{timeout:8000}));
+      const {latitude,longitude}=pos.coords;
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+      const d=await r.json();
+      const name=d.address?.city||d.address?.town||d.address?.village||d.address?.county||"";
+      if(name)setCt(name);
+    } catch{}
+    setLocating(false);
+  }
 
   async function uploadPhoto(idx,file){
     setUpIdx(idx);
@@ -706,7 +751,13 @@ function ProfileTab({user,profile,setProfile,onLogout,lang,setLang,thm,setTheme}
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{profile.interests?.map(i=><span key={i} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontFamily:"'Nunito'",fontWeight:600,background:T.accentSoft,color:T.accent}}>{i}</span>)}</div>
       </>:<>
         <input value={nm} onChange={e=>setNm(e.target.value)} placeholder={t.firstName} style={inp}/>
-        <div style={{display:"flex",gap:8}}><input type="number" value={ag} onChange={e=>setAg(e.target.value)} style={{...inp,width:80}}/><input value={ct} onChange={e=>setCt(e.target.value)} placeholder={t.city} style={{...inp,flex:1}}/></div>
+        <div style={{display:"flex",gap:8}}>
+          <input type="number" value={ag} onChange={e=>setAg(e.target.value)} style={{...inp,width:80}}/>
+          <div style={{flex:1,position:"relative"}}>
+            <input value={ct} onChange={e=>setCt(e.target.value)} placeholder={t.city} style={{...inp,paddingRight:38,width:"100%"}}/>
+            <button onClick={detectCity} disabled={locating} title={t.locDetect} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:15,opacity:locating?0.4:0.7,padding:2}}>{locating?"⏳":"📍"}</button>
+          </div>
+        </div>
         <textarea value={bi} onChange={e=>setBi(e.target.value.slice(0,150))} rows={3} style={{...inp,resize:"none"}}/>
         <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>{ints.map(tag=>{const a=it.includes(tag);return<button key={tag} onClick={()=>setIt(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"6px 12px",borderRadius:16,fontSize:12,fontFamily:"'Nunito'",fontWeight:600,cursor:"pointer",border:`1px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS}}>{tag}</button>;})}</div>
         <div style={{display:"flex",gap:8}}><Btn full onClick={save} disabled={saving}>{saving?"…":t.save}</Btn><Btn variant="ghost" onClick={()=>setEditing(false)}>✕</Btn></div>
