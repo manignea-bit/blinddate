@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile, onAuthStateChanged, signOut } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, collection, query, where, orderBy, onSnapshot, serverTimestamp, arrayUnion, getDocs } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, collection, query, where, orderBy, onSnapshot, serverTimestamp, arrayUnion } from "firebase/firestore";
 
 const app = initializeApp({ apiKey:"AIzaSyB02eHA3ZtfLj6DEIk1oTOgkzXexHLn_kY", authDomain:"love-at-first-sight-8c6d3.firebaseapp.com", projectId:"love-at-first-sight-8c6d3" });
 const auth = getAuth(app);
@@ -10,27 +10,76 @@ const gProv = new GoogleAuthProvider();
 const CLD = { c:"dgbcpuvgb", p:"blinddate_upload" };
 const CHAT_DUR = 60;
 const WAIT_TIMEOUT = 60;
-const INTS = ["Cinéma","Musique","Sport","Voyages","Art","Tech","Cuisine","Lecture","Gaming","Photo","Nature","Mode","Humour","Science"];
-const ICEBREAKERS = ["Tu préfères voyager dans le passé ou le futur ?","Guilty pleasure ?","Superpouvoir ?","Emoji préféré ?","Dernier fou rire ?","Lieu de rêve pour un date ?","Chien ou chat ?","Chanson du moment ?"];
-const BONUS_TYPES = [{id:"city",icon:"📍",name:"Ville"},{id:"ice",icon:"🎲",name:"Brise-glace"},{id:"peek",icon:"👀",name:"Intérêt"},{id:"anon",icon:"🕶️",name:"Âge"}];
-const DEF_BONUS = { city:3, ice:3, peek:3, anon:3 };
+const DECISION_TIMEOUT = 30;
 const XP_CHAT = 5;
 const XP_MATCH = 20;
-const DECISION_TIMEOUT = 30;
+const DEF_BONUS = { city:3, ice:3, peek:3, anon:3 };
 
-function getLv(xp) {
-  if (xp<50) return {lv:1,n:"Débutant",nx:50};
-  if (xp<150) return {lv:2,n:"Curieux",nx:150};
-  if (xp<300) return {lv:3,n:"Sociable",nx:300};
-  if (xp<500) return {lv:4,n:"Charmeur",nx:500};
-  return {lv:5,n:"Légende",nx:9999};
-}
+const INTS = {
+  en: ["Cinema","Music","Sports","Travel","Art","Tech","Cooking","Reading","Gaming","Photography","Nature","Fashion","Humor","Science"],
+  fr: ["Cinéma","Musique","Sport","Voyages","Art","Tech","Cuisine","Lecture","Gaming","Photo","Nature","Mode","Humour","Science"]
+};
+const ICEBREAKERS = {
+  en: ["Would you rather travel to the past or future?","Guilty pleasure?","Superpower?","Favorite emoji?","Last time you laughed hard?","Dream date location?","Dog or cat?","Current song on repeat?"],
+  fr: ["Tu préfères voyager dans le passé ou le futur ?","Guilty pleasure ?","Superpouvoir ?","Emoji préféré ?","Dernier fou rire ?","Lieu de rêve pour un date ?","Chien ou chat ?","Chanson du moment ?"]
+};
+const BONUS_TYPES = {
+  en: [{id:"city",icon:"📍",name:"City"},{id:"ice",icon:"🎲",name:"Icebreaker"},{id:"peek",icon:"👀",name:"Interest"},{id:"anon",icon:"🕶️",name:"Age"}],
+  fr: [{id:"city",icon:"📍",name:"Ville"},{id:"ice",icon:"🎲",name:"Brise-glace"},{id:"peek",icon:"👀",name:"Intérêt"},{id:"anon",icon:"🕶️",name:"Âge"}]
+};
 
-const dark = {name:"dark",bg:"#06060b",surface:"#0d0d15",surfAlt:"#12121c",card:"#10101a",border:"#1a1a30",borderL:"#252545",input:"#0b0b14",accent:"#ff2d6b",accentGlow:"rgba(255,45,107,0.3)",accentSoft:"rgba(255,45,107,0.08)",accentGrad:"linear-gradient(135deg,#ff2d6b,#ff6b3d)",sec:"#6c5ce7",gold:"#fbbf24",goldSoft:"rgba(251,191,36,0.1)",success:"#00d68f",danger:"#ff4757",text:"#f0f0f8",textS:"#8888a4",textD:"#4a4a65",overlay:"rgba(3,3,8,0.92)",toggle:"🌙",bgGrad:"radial-gradient(ellipse at 20% 0%,#12102a 0%,#06060b 50%)",gBg:"rgba(255,255,255,0.06)",gC:"#fff",gB:"1px solid rgba(255,255,255,0.12)"};
-const light = {name:"light",bg:"#faf8f5",surface:"#ffffff",surfAlt:"#f5f2ee",card:"#ffffff",border:"#e8e2da",borderL:"#d8d2ca",input:"#f5f2ee",accent:"#e6295f",accentGlow:"rgba(230,41,95,0.2)",accentSoft:"rgba(230,41,95,0.06)",accentGrad:"linear-gradient(135deg,#e6295f,#ff6b3d)",sec:"#5b4cdb",gold:"#d97706",goldSoft:"rgba(217,119,6,0.08)",success:"#059669",danger:"#dc2626",text:"#1a1a2e",textS:"#6b6b80",textD:"#9b9baa",overlay:"rgba(250,248,245,0.92)",toggle:"☀️",bgGrad:"radial-gradient(ellipse at 30% 0%,#fde8f0 0%,#faf8f5 50%)",gBg:"#fff",gC:"#333",gB:"1px solid #ddd"};
+const TR = {
+  en: {
+    tagline:"60 seconds to connect",or:"or",firstName:"First name",email:"Email",password:"Password",
+    login:"Sign in",signupBtn:"Create account 🚀",noAccount:"No account? ",register:"Sign up",
+    hasAccount:"Already have an account? ",signIn:"Sign in",
+    errNamePass:"First name + 6 chars min",errEmailUsed:"Email already in use",errNoUser:"No account found",errBadCred:"Email or password incorrect",
+    profileStep:(s,total)=>`Profile (${s}/${total})`,age:"Age",city:"City",interests:(n)=>`Interests (${n}/5)`,bio:"Bio",
+    clickToChoose:"Click to choose a photo",next:"Next →",finish:"Let's go 🚀",back:"←",
+    errAgeCity:"Age (18+) and city required",errMinInterests:"Select at least 2",errBio:"Bio required",errPhoto:"Photo required",
+    bonusSection:"Boosts",startChat:"⚡ Start Blind Date",
+    matches:"Matches",noMatches:"No matches yet",newMatch:"New match 👋",sendFirst:"💬 Say hello first!",
+    reportTitle:"Report",cancel:"Cancel",inappropriate:"Inappropriate",spam:"Spam",fakeProfile:"Fake profile",harassment:"Harassment",other:"Other",
+    photos:"Photos",infoSection:"Info",logout:"Sign out",save:"✓ Save",
+    homeNav:"Home",matchesNav:"Matches",profileNav:"Profile",
+    unknown:"Anonymous",iceBreak:"👋 Break the ice!",typeMessage:"Message...",
+    searching:"Searching...",waitingPlayer:"Looking for someone...",cancelBtn:"Cancel",
+    timeUp:"Time's up!",revealQ:"Want to know who was behind the mask?",matchBtn:"💕 Match",passBtn:"Pass →",
+    waitingDec:"Waiting...",otherDecides:(n)=>`Waiting for their decision (${n}s)`,backBtn:"← Back",
+    matchTitle:"It's a Match!",noMatchTitle:"Not this time",noMatchSub:"Keep going — the next one might be it!",retry:"Try again ⚡",great:"Awesome 🎉",
+    settings:"Settings",language:"Language",theme:"Theme",dark:"Dark",light:"Light",
+    lv1:"Beginner",lv2:"Curious",lv3:"Social",lv4:"Charmer",lv5:"Legend",
+  },
+  fr: {
+    tagline:"60 secondes pour une connexion",or:"ou",firstName:"Prénom",email:"Email",password:"Mot de passe",
+    login:"Se connecter",signupBtn:"Créer mon compte 🚀",noAccount:"Pas de compte ? ",register:"S'inscrire",
+    hasAccount:"Déjà un compte ? ",signIn:"Se connecter",
+    errNamePass:"Prénom + 6 car. min",errEmailUsed:"Email déjà utilisé",errNoUser:"Aucun compte",errBadCred:"Email ou mdp incorrect",
+    profileStep:(s,total)=>`Profil (${s}/${total})`,age:"Âge",city:"Ville",interests:(n)=>`Intérêts (${n}/5)`,bio:"Bio",
+    clickToChoose:"Clique pour choisir",next:"Suivant →",finish:"Go 🚀",back:"←",
+    errAgeCity:"Âge (18+) et ville requis",errMinInterests:"Minimum 2",errBio:"Bio requise",errPhoto:"Photo requise",
+    bonusSection:"Bonus",startChat:"⚡ Conversation (60s)",
+    matches:"Matchs",noMatches:"Pas encore de matchs",newMatch:"Nouveau match 👋",sendFirst:"💬 Envoie le premier message !",
+    reportTitle:"Signaler",cancel:"Annuler",inappropriate:"Inapproprié",spam:"Spam",fakeProfile:"Faux profil",harassment:"Harcèlement",other:"Autre",
+    photos:"Photos",infoSection:"Infos",logout:"Déconnexion",save:"✓ Sauver",
+    homeNav:"Accueil",matchesNav:"Matchs",profileNav:"Profil",
+    unknown:"Inconnu·e",iceBreak:"👋 Brise la glace !",typeMessage:"Écris...",
+    searching:"Recherche...",waitingPlayer:"En attente d'un autre joueur",cancelBtn:"Annuler",
+    timeUp:"Temps écoulé !",revealQ:"Découvrir qui se cache derrière ?",matchBtn:"💕 Matcher",passBtn:"Passer →",
+    waitingDec:"En attente...",otherDecides:(n)=>`L'autre décide (max ${n}s)`,backBtn:"← Retour",
+    matchTitle:"Match !",noMatchTitle:"Pas cette fois",noMatchSub:"La prochaine sera la bonne !",retry:"Réessayer ⚡",great:"Super 🎉",
+    settings:"Paramètres",language:"Langue",theme:"Thème",dark:"Sombre",light:"Clair",
+    lv1:"Débutant",lv2:"Curieux",lv3:"Sociable",lv4:"Charmeur",lv5:"Légende",
+  }
+};
+
+const dark = {name:"dark",bg:"#07070f",surface:"#0e0e1a",surfAlt:"#12121e",card:"#0f0f1c",border:"#1c1c32",borderL:"#28284a",input:"#0b0b16",accent:"#e8265c",accentGlow:"rgba(232,38,92,0.28)",accentSoft:"rgba(232,38,92,0.08)",accentGrad:"linear-gradient(135deg,#e8265c,#ff6b3d)",sec:"#6c5ce7",gold:"#fbbf24",goldSoft:"rgba(251,191,36,0.1)",danger:"#ff4757",text:"#eeeef8",textS:"#8888a8",textD:"#45455e",overlay:"rgba(4,4,12,0.95)",bgGrad:"radial-gradient(ellipse at 25% 0%,#16103c 0%,#07070f 65%)",gBg:"rgba(255,255,255,0.05)",gC:"#fff",gB:"1px solid rgba(255,255,255,0.1)"};
+const light = {name:"light",bg:"#f7f5f2",surface:"#ffffff",surfAlt:"#f0ede8",card:"#ffffff",border:"#e5dfd6",borderL:"#d5cfc6",input:"#f0ede8",accent:"#e6295f",accentGlow:"rgba(230,41,95,0.18)",accentSoft:"rgba(230,41,95,0.06)",accentGrad:"linear-gradient(135deg,#e6295f,#ff6b3d)",sec:"#5b4cdb",gold:"#d97706",goldSoft:"rgba(217,119,6,0.08)",danger:"#dc2626",text:"#16162a",textS:"#65658a",textD:"#9898b0",overlay:"rgba(247,245,242,0.95)",bgGrad:"radial-gradient(ellipse at 30% 0%,#fce8ef 0%,#f7f5f2 65%)",gBg:"#fff",gC:"#222",gB:"1px solid #ddd"};
 
 const TC = createContext(dark);
 function useT() { return useContext(TC); }
+const LC = createContext({ lang:"en", t:TR.en });
+function useL() { return useContext(LC); }
 
 async function upImg(f) {
   const fd = new FormData();
@@ -40,39 +89,47 @@ async function upImg(f) {
   return (await r.json()).secure_url;
 }
 
-// ═══ COMPONENTS ═══
+// ── COMPONENTS ──
 
 function Btn({children,variant="primary",disabled,onClick,style:sx,full}) {
   const [h,sH] = useState(false);
   const T = useT();
-  const styles = {
-    primary:{bg:T.accentGrad,c:"#fff",b:"none",s:`0 4px 24px ${T.accentGlow}`},
+  const vs = {
+    primary:{bg:T.accentGrad,c:"#fff",b:"none",s:`0 4px 20px ${T.accentGlow}`},
     ghost:{bg:"transparent",c:T.textS,b:`1px solid ${T.border}`,s:"none"},
     google:{bg:T.gBg,c:T.gC,b:T.gB,s:"none"},
-    danger:{bg:`${T.danger}15`,c:T.danger,b:`1px solid ${T.danger}33`,s:"none"}
+    danger:{bg:`${T.danger}12`,c:T.danger,b:`1px solid ${T.danger}30`,s:"none"}
   };
-  const v = styles[variant] || styles.primary;
-  return <button disabled={disabled} onClick={onClick} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} style={{padding:"14px 28px",fontSize:15,fontWeight:700,fontFamily:"'Nunito',sans-serif",borderRadius:16,cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.5:1,background:v.bg,color:v.c,border:v.b,boxShadow:v.s,width:full?"100%":"auto",transition:"all .3s cubic-bezier(.34,1.56,.64,1)",transform:h&&!disabled?"translateY(-2px)":"none",...sx}}>{children}</button>;
+  const v = vs[variant]||vs.primary;
+  return <button disabled={disabled} onClick={onClick} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)}
+    style={{padding:"13px 26px",fontSize:14,fontWeight:700,fontFamily:"'Nunito',sans-serif",borderRadius:14,cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.5:1,background:v.bg,color:v.c,border:v.b,boxShadow:v.s,width:full?"100%":"auto",transition:"all .2s ease",transform:h&&!disabled?"translateY(-1px)":"none",...sx}}>{children}</button>;
 }
 
 function Card({children,style:sx}) {
   const T = useT();
-  return <div style={{background:T.card,borderRadius:20,border:`1px solid ${T.border}`,boxShadow:"0 4px 16px rgba(0,0,0,.12)",...sx}}>{children}</div>;
+  return <div style={{background:T.card,borderRadius:20,border:`1px solid ${T.border}`,boxShadow:T.name==="dark"?"0 2px 24px rgba(0,0,0,.3)":"0 2px 16px rgba(0,0,0,.06)",...sx}}>{children}</div>;
+}
+
+function Label({children}) {
+  const T = useT();
+  return <div style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.3,marginBottom:10}}>{children}</div>;
 }
 
 function XPBar({xp}) {
   const T = useT();
-  const l = getLv(xp||0);
+  const {t} = useL();
+  const levels = [{lv:1,n:t.lv1,nx:50},{lv:2,n:t.lv2,nx:150},{lv:3,n:t.lv3,nx:300},{lv:4,n:t.lv4,nx:500},{lv:5,n:t.lv5,nx:9999}];
+  const l = levels.find(x=>(xp||0)<x.nx)||levels[4];
   const pct = Math.min(((xp||0)/l.nx)*100,100);
-  return <div style={{display:"flex",alignItems:"center",gap:10}}>
-    <div style={{width:26,height:26,borderRadius:"50%",background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"#fff",fontFamily:"'Nunito'"}}>{l.lv}</div>
+  return <div style={{display:"flex",alignItems:"center",gap:12}}>
+    <div style={{width:32,height:32,borderRadius:10,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff",fontFamily:"'Nunito'",flexShrink:0}}>{l.lv}</div>
     <div style={{flex:1}}>
-      <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
-        <span style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:700,color:T.text}}>{l.n}</span>
-        <span style={{fontFamily:"'Nunito'",fontSize:10,color:T.textD}}>{xp||0}/{l.nx}</span>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+        <span style={{fontFamily:"'Nunito'",fontSize:12,fontWeight:700,color:T.text}}>{l.n}</span>
+        <span style={{fontFamily:"'Nunito'",fontSize:11,color:T.textD}}>{xp||0} / {l.nx} XP</span>
       </div>
-      <div style={{height:4,borderRadius:2,background:T.border,overflow:"hidden"}}>
-        <div style={{width:`${pct}%`,height:"100%",background:T.accentGrad}}/>
+      <div style={{height:5,borderRadius:3,background:T.border,overflow:"hidden"}}>
+        <div style={{width:`${pct}%`,height:"100%",background:T.accentGrad,borderRadius:3,transition:"width .6s ease"}}/>
       </div>
     </div>
   </div>;
@@ -80,13 +137,25 @@ function XPBar({xp}) {
 
 function NavBar({tab,setTab,n}) {
   const T = useT();
-  return <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:50,background:T.surface,borderTop:`1px solid ${T.border}`,display:"flex",justifyContent:"space-around",padding:"8px 0 14px"}}>
-    {[{id:"home",i:"🔮",l:"Accueil"},{id:"matches",i:"💬",l:"Matchs"},{id:"profile",i:"👤",l:"Profil"}].map(t=>
-      <button key={t.id} onClick={()=>setTab(t.id)} style={{background:"transparent",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"6px 16px"}}>
-        <span style={{fontSize:20,filter:tab===t.id?"none":"grayscale(.5) opacity(.5)",position:"relative"}}>{t.i}{t.id==="matches"&&n>0&&<span style={{position:"absolute",top:-2,right:-6,width:8,height:8,borderRadius:"50%",background:T.accent}}/>}</span>
-        <span style={{fontFamily:"'Nunito'",fontSize:10,fontWeight:700,color:tab===t.id?T.accent:T.textD}}>{t.l}</span>
-      </button>
-    )}
+  const {t} = useL();
+  const HomeIcon = ()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+  const ChatIcon = ()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+  const UserIcon = ()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+  const items = [
+    {id:"home",label:t.homeNav,Icon:HomeIcon},
+    {id:"matches",label:t.matchesNav,Icon:ChatIcon},
+    {id:"profile",label:t.profileNav,Icon:UserIcon}
+  ];
+  return <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:50,background:T.surface,borderTop:`1px solid ${T.border}`,display:"flex",justifyContent:"space-around",padding:"10px 0 16px"}}>
+    {items.map(({id,label,Icon})=>{
+      const active = tab===id;
+      return <button key={id} onClick={()=>setTab(id)} style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 24px",position:"relative",color:active?T.accent:T.textD,transition:"color .2s"}}>
+        {id==="matches"&&n>0&&<span style={{position:"absolute",top:2,right:18,width:7,height:7,borderRadius:"50%",background:T.accent,border:`2px solid ${T.surface}`}}/>}
+        <Icon/>
+        <span style={{fontFamily:"'Nunito'",fontSize:10,fontWeight:700}}>{label}</span>
+        {active&&<span style={{position:"absolute",top:-1,left:"50%",transform:"translateX(-50%)",width:24,height:2.5,borderRadius:2,background:T.accentGrad}}/>}
+      </button>;
+    })}
   </div>;
 }
 
@@ -94,22 +163,37 @@ function PhotoSlot({url,onUp,onRm,idx}) {
   const T = useT();
   const ref = useRef(null);
   const [h,sH] = useState(false);
-  return <div onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={()=>!url&&ref.current?.click()} style={{aspectRatio:"3/4",borderRadius:18,overflow:"hidden",position:"relative",cursor:"pointer",border:url?`2px solid ${T.border}`:`2px dashed ${T.borderL}`,background:T.surfAlt,transition:"all .3s",transform:h?"scale(1.03)":"none"}}>
+  return <div onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)} onClick={()=>!url&&ref.current?.click()}
+    style={{aspectRatio:"3/4",borderRadius:16,overflow:"hidden",position:"relative",cursor:url?"default":"pointer",border:url?`2px solid ${T.border}`:`2px dashed ${T.borderL}`,background:T.surfAlt,transition:"transform .2s",transform:h&&!url?"scale(1.02)":"none"}}>
     {url ? <>
       <img src={url} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-      {h && <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.5)",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-        <button onClick={e=>{e.stopPropagation();ref.current?.click()}} style={{padding:"6px 12px",borderRadius:10,background:T.accentGrad,border:"none",color:"#fff",fontSize:11,fontFamily:"'Nunito'",fontWeight:700,cursor:"pointer"}}>📷</button>
-        <button onClick={e=>{e.stopPropagation();onRm(idx)}} style={{padding:"6px 12px",borderRadius:10,background:`${T.danger}44`,border:"none",color:T.danger,fontSize:11,fontFamily:"'Nunito'",fontWeight:700,cursor:"pointer"}}>✕</button>
+      {h&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.5)",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+        <button onClick={e=>{e.stopPropagation();ref.current?.click()}} style={{padding:"5px 10px",borderRadius:8,background:T.accentGrad,border:"none",color:"#fff",fontSize:11,fontFamily:"'Nunito'",fontWeight:700,cursor:"pointer"}}>📷</button>
+        <button onClick={e=>{e.stopPropagation();onRm(idx)}} style={{padding:"5px 10px",borderRadius:8,background:"rgba(255,71,87,.4)",border:"none",color:"#fff",fontSize:11,fontFamily:"'Nunito'",fontWeight:700,cursor:"pointer"}}>✕</button>
       </div>}
-    </> : <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%"}}><span style={{fontSize:24,color:T.textD}}>＋</span></div>}
+    </> : <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%"}}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>}
     <input ref={ref} type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(f)onUp(idx,f)}} style={{display:"none"}}/>
   </div>;
 }
 
-// ═══ AUTH ═══
+function ReportModal({title,reasons,cancel,onReport,onClose}) {
+  const T = useT();
+  return <div style={{position:"fixed",inset:0,zIndex:1000,background:T.overlay,backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+    <Card style={{padding:24,maxWidth:360,width:"100%",animation:"scaleIn .2s ease"}}>
+      <h3 style={{fontFamily:"'Nunito'",fontSize:16,fontWeight:800,color:T.text,marginBottom:16}}>🚩 {title}</h3>
+      {reasons.map(r=><button key={r} onClick={()=>onReport(r)} style={{display:"block",width:"100%",padding:"11px 14px",marginBottom:8,borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textS,fontFamily:"'Nunito'",fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left"}}>{r}</button>)}
+      <button onClick={onClose} style={{marginTop:4,width:"100%",padding:"11px 14px",borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textD,fontFamily:"'Nunito'",fontSize:13,cursor:"pointer"}}>{cancel}</button>
+    </Card>
+  </div>;
+}
+
+// ── AUTH ──
 
 function AuthScreen() {
   const T = useT();
+  const {t} = useL();
   const [mode,setMode] = useState("login");
   const [email,setEmail] = useState("");
   const [pass,setPass] = useState("");
@@ -121,7 +205,7 @@ function AuthScreen() {
     setErr(""); setLd(true);
     try {
       if (mode==="signup") {
-        if (!name.trim()||pass.length<6) {setErr("Prénom + 6 car. min");setLd(false);return;}
+        if (!name.trim()||pass.length<6){setErr(t.errNamePass);setLd(false);return;}
         const c = await createUserWithEmailAndPassword(auth,email,pass);
         await updateProfile(c.user,{displayName:name.trim()});
         await setDoc(doc(db,"users",c.user.uid),{name:name.trim(),email,age:null,city:"",bio:"",photos:[],interests:[],profileComplete:false,bonuses:DEF_BONUS,xp:0,blocked:[],createdAt:serverTimestamp()});
@@ -129,7 +213,7 @@ function AuthScreen() {
         await signInWithEmailAndPassword(auth,email,pass);
       }
     } catch(e) {
-      setErr({"auth/email-already-in-use":"Email déjà utilisé","auth/user-not-found":"Aucun compte","auth/invalid-credential":"Email ou mdp incorrect"}[e.code]||e.message);
+      setErr({"auth/email-already-in-use":t.errEmailUsed,"auth/user-not-found":t.errNoUser,"auth/invalid-credential":t.errBadCred}[e.code]||e.message);
     }
     setLd(false);
   }
@@ -140,43 +224,55 @@ function AuthScreen() {
       const r = await signInWithPopup(auth,gProv);
       const s = await getDoc(doc(db,"users",r.user.uid));
       if (!s.exists()) await setDoc(doc(db,"users",r.user.uid),{name:r.user.displayName||"",email:r.user.email,age:null,city:"",bio:"",photos:r.user.photoURL?[r.user.photoURL]:[],interests:[],profileComplete:false,bonuses:DEF_BONUS,xp:0,blocked:[],createdAt:serverTimestamp()});
-    } catch(e) {setErr(e.message);}
+    } catch(e){setErr(e.message);}
     setLd(false);
   }
 
-  const inp = {width:"100%",padding:"14px 18px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none",marginBottom:14};
+  const inp = {width:"100%",padding:"14px 18px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none",marginBottom:12};
 
-  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-    <div style={{width:"100%",maxWidth:400,animation:"fadeIn .5s"}}>
-      <div style={{textAlign:"center",marginBottom:36}}>
-        <div style={{fontSize:52,marginBottom:12,animation:"float 3s ease-in-out infinite"}}>🔮</div>
-        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:34,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 6px"}}>BlindDate</h1>
-        <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textD}}>60 secondes pour une connexion</p>
+  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+    <div style={{width:"100%",maxWidth:380,animation:"fadeIn .5s"}}>
+      <div style={{textAlign:"center",marginBottom:44}}>
+        <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:22,background:T.accentGrad,marginBottom:18,boxShadow:`0 10px 40px ${T.accentGlow}`}}>
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:34,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 8px",letterSpacing:"-0.5px"}}>BlindDate</h1>
+        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,letterSpacing:"0.2px"}}>{t.tagline}</p>
       </div>
-      {err&&<div style={{padding:12,borderRadius:14,background:`${T.danger}10`,border:`1px solid ${T.danger}33`,color:T.danger,fontSize:13,fontFamily:"'Nunito'",marginBottom:16,textAlign:"center"}}>{err}</div>}
-      <Btn variant="google" full onClick={handleGoogle} disabled={ld} style={{marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+
+      {err&&<div style={{padding:"12px 16px",borderRadius:12,background:`${T.danger}10`,border:`1px solid ${T.danger}25`,color:T.danger,fontSize:13,fontFamily:"'Nunito'",marginBottom:16,textAlign:"center"}}>{err}</div>}
+
+      <Btn variant="google" full onClick={handleGoogle} disabled={ld} style={{marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
+        <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         Google
       </Btn>
-      <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0"}}><div style={{flex:1,height:1,background:T.border}}/><span style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD}}>ou</span><div style={{flex:1,height:1,background:T.border}}/></div>
-      <Card style={{padding:24,marginBottom:20}}>
-        {mode==="signup"&&<input value={name} onChange={e=>setName(e.target.value)} placeholder="Prénom" style={inp}/>}
-        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" style={inp}/>
-        <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Mot de passe" onKeyDown={e=>e.key==="Enter"&&handleSubmit()} style={{...inp,marginBottom:0}}/>
+
+      <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0"}}>
+        <div style={{flex:1,height:1,background:T.border}}/><span style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD}}>{t.or}</span><div style={{flex:1,height:1,background:T.border}}/>
+      </div>
+
+      <Card style={{padding:20,marginBottom:16}}>
+        {mode==="signup"&&<input value={name} onChange={e=>setName(e.target.value)} placeholder={t.firstName} style={inp}/>}
+        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={t.email} style={inp}/>
+        <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder={t.password} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} style={{...inp,marginBottom:0}}/>
       </Card>
-      <Btn full onClick={handleSubmit} disabled={ld}>{ld?"...":mode==="login"?"Se connecter":"Créer mon compte 🚀"}</Btn>
-      <p style={{textAlign:"center",marginTop:20,fontFamily:"'Nunito'",fontSize:14,color:T.textS}}>
-        {mode==="login"?"Pas de compte ? ":"Déjà un compte ? "}
-        <span onClick={()=>{setMode(mode==="login"?"signup":"login");setErr("");}} style={{color:T.accent,fontWeight:700,cursor:"pointer"}}>{mode==="login"?"S'inscrire":"Se connecter"}</span>
+
+      <Btn full onClick={handleSubmit} disabled={ld}>{ld?"…":mode==="login"?t.login:t.signupBtn}</Btn>
+      <p style={{textAlign:"center",marginTop:20,fontFamily:"'Nunito'",fontSize:13,color:T.textS}}>
+        {mode==="login"?t.noAccount:t.hasAccount}
+        <span onClick={()=>{setMode(mode==="login"?"signup":"login");setErr("");}} style={{color:T.accent,fontWeight:700,cursor:"pointer"}}>
+          {mode==="login"?t.register:t.signIn}
+        </span>
       </p>
     </div>
   </div>;
 }
 
-// ═══ SETUP ═══
+// ── SETUP ──
 
 function Setup({user,onDone}) {
   const T = useT();
+  const {lang,t} = useL();
   const [step,setStep] = useState(0);
   const [age,setAge] = useState("");
   const [city,setCity] = useState("");
@@ -187,13 +283,14 @@ function Setup({user,onDone}) {
   const [uploading,setUploading] = useState(false);
   const [err,setErr] = useState("");
   const fileRef = useRef(null);
+  const ints = INTS[lang];
 
   function validate() {
     setErr("");
-    if (step===0&&(!age||age<18||!city.trim())) {setErr("Âge (18+) et ville requis");return false;}
-    if (step===1&&interests.length<2) {setErr("Minimum 2");return false;}
-    if (step===2&&!bio.trim()) {setErr("Bio requise");return false;}
-    if (step===3&&!photoFile) {setErr("Photo requise");return false;}
+    if (step===0&&(!age||age<18||!city.trim())){setErr(t.errAgeCity);return false;}
+    if (step===1&&interests.length<2){setErr(t.errMinInterests);return false;}
+    if (step===2&&!bio.trim()){setErr(t.errBio);return false;}
+    if (step===3&&!photoFile){setErr(t.errPhoto);return false;}
     return true;
   }
 
@@ -205,86 +302,109 @@ function Setup({user,onDone}) {
       const data = {age:parseInt(age),city:city.trim(),bio:bio.trim(),interests,photos:[url],profileComplete:true,bonuses:DEF_BONUS,xp:0};
       await updateDoc(doc(db,"users",user.uid),data);
       onDone({name:user.displayName,...data});
-    } catch(e) {setErr(e.message);}
+    } catch(e){setErr(e.message);}
     setUploading(false);
   }
 
-  function next() {if (validate()) {step===3?finish():setStep(s=>s+1);}}
+  function next(){if(validate()){step===3?finish():setStep(s=>s+1);}}
 
-  const inp = {width:"100%",padding:"14px 18px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none"};
+  const inp = {width:"100%",padding:"13px 16px",borderRadius:13,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none"};
 
-  return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",padding:20}}>
+  return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",padding:"24px 20px 48px"}}>
     <div style={{width:"100%",maxWidth:420}}>
-      <div style={{textAlign:"center",marginBottom:24,paddingTop:20}}>
-        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:24,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:0}}>Profil ({step+1}/4)</h1>
-      </div>
-      <div style={{width:"100%",height:4,borderRadius:2,background:T.border,marginBottom:20,overflow:"hidden"}}>
-        <div style={{width:`${((step+1)/4)*100}%`,height:"100%",background:T.accentGrad,transition:"width .4s"}}/>
+      <div style={{textAlign:"center",marginBottom:24,paddingTop:16}}>
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:22,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 18px"}}>{t.profileStep(step+1,4)}</h1>
+        <div style={{display:"flex",gap:6,justifyContent:"center"}}>
+          {[0,1,2,3].map(i=><div key={i} style={{height:6,borderRadius:3,background:i<=step?T.accentGrad:T.border,transition:"all .4s ease",width:i===step?28:i<step?16:8}}/>)}
+        </div>
       </div>
       {err&&<div style={{padding:10,borderRadius:12,background:`${T.danger}10`,color:T.danger,fontSize:13,fontFamily:"'Nunito'",marginBottom:14,textAlign:"center"}}>{err}</div>}
-      <Card style={{padding:24,marginBottom:20}}>
+      <Card style={{padding:22,marginBottom:18}}>
         {step===0&&<>
-          <label style={{fontFamily:"'Nunito'",fontSize:13,fontWeight:600,color:T.textS,display:"block",marginBottom:6}}>Âge</label>
-          <input type="number" min={18} value={age} onChange={e=>setAge(e.target.value)} style={{...inp,width:100,marginBottom:16}}/>
-          <label style={{fontFamily:"'Nunito'",fontSize:13,fontWeight:600,color:T.textS,display:"block",marginBottom:6}}>Ville</label>
+          <Label>{t.age}</Label>
+          <input type="number" min={18} value={age} onChange={e=>setAge(e.target.value)} style={{...inp,width:100,marginBottom:18}}/>
+          <Label>{t.city}</Label>
           <input value={city} onChange={e=>setCity(e.target.value)} placeholder="Paris..." style={inp}/>
         </>}
         {step===1&&<>
-          <label style={{fontFamily:"'Nunito'",fontSize:13,fontWeight:600,color:T.textS,display:"block",marginBottom:10}}>Intérêts ({interests.length}/5)</label>
+          <Label>{t.interests(interests.length)}</Label>
           <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-            {INTS.map(t=>{const a=interests.includes(t);return<button key={t} onClick={()=>setInterests(p=>a?p.filter(x=>x!==t):p.length<5?[...p,t]:p)} style={{padding:"8px 16px",borderRadius:20,fontSize:13,fontFamily:"'Nunito'",fontWeight:600,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS}}>{t}</button>;})}
+            {ints.map(tag=>{const a=interests.includes(tag);return<button key={tag} onClick={()=>setInterests(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"7px 16px",borderRadius:20,fontSize:13,fontFamily:"'Nunito'",fontWeight:600,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{tag}</button>;})}
           </div>
         </>}
         {step===2&&<>
-          <label style={{fontFamily:"'Nunito'",fontSize:13,fontWeight:600,color:T.textS,display:"block",marginBottom:6}}>Bio</label>
-          <textarea value={bio} onChange={e=>setBio(e.target.value.slice(0,150))} rows={4} style={{...inp,resize:"none",lineHeight:1.6}}/>
+          <Label>{t.bio}</Label>
+          <textarea value={bio} onChange={e=>setBio(e.target.value.slice(0,150))} rows={4} style={{...inp,resize:"none",lineHeight:1.7,width:"100%"}}/>
+          <div style={{textAlign:"right",marginTop:5,fontFamily:"'Nunito'",fontSize:11,color:T.textD}}>{bio.length}/150</div>
         </>}
         {step===3&&<>
-          <div onClick={()=>fileRef.current?.click()} style={{border:`2px dashed ${T.borderL}`,borderRadius:18,padding:preview?0:36,textAlign:"center",cursor:"pointer",overflow:"hidden"}}>
-            {preview?<img src={preview} style={{width:"100%",maxHeight:240,objectFit:"cover",display:"block",borderRadius:16}}/>:<div><span style={{fontSize:40}}>📸</span><p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textS,marginTop:8}}>Clique pour choisir</p></div>}
+          <div onClick={()=>fileRef.current?.click()} style={{border:`2px dashed ${T.borderL}`,borderRadius:16,padding:preview?0:40,textAlign:"center",cursor:"pointer",overflow:"hidden"}}>
+            {preview
+              ?<img src={preview} style={{width:"100%",maxHeight:260,objectFit:"cover",display:"block",borderRadius:14}}/>
+              :<div>
+                <div style={{width:56,height:56,borderRadius:16,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textS}}>{t.clickToChoose}</p>
+              </div>}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(!f)return;setPhotoFile(f);const r=new FileReader();r.onload=ev=>setPreview(ev.target.result);r.readAsDataURL(f);}} style={{display:"none"}}/>
         </>}
       </Card>
       <div style={{display:"flex",gap:10}}>
-        {step>0&&<Btn variant="ghost" onClick={()=>setStep(s=>s-1)} style={{flex:1}}>←</Btn>}
-        <Btn full onClick={next} disabled={uploading} style={{flex:2}}>{uploading?"...":step===3?"Go 🚀":"Suivant →"}</Btn>
+        {step>0&&<Btn variant="ghost" onClick={()=>setStep(s=>s-1)} style={{flex:1}}>{t.back}</Btn>}
+        <Btn full onClick={next} disabled={uploading} style={{flex:2}}>{uploading?"…":step===3?t.finish:t.next}</Btn>
       </div>
     </div>
   </div>;
 }
 
-// ═══ HOME ═══
+// ── HOME ──
 
 function HomeTab({profile,onStart,bonuses}) {
   const T = useT();
-  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:80}}>
-    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-      {profile.photos?.[0]&&<img src={profile.photos[0]} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",border:`2px solid ${T.accent}`}}/>}
+  const {lang,t} = useL();
+  const bonusTypes = BONUS_TYPES[lang];
+  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90}}>
+    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:20}}>
+      {profile.photos?.[0]
+        ?<img src={profile.photos[0]} style={{width:54,height:54,borderRadius:16,objectFit:"cover",border:`2px solid ${T.accent}`}}/>
+        :<div style={{width:54,height:54,borderRadius:16,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff"}}>{profile.name?.[0]}</div>}
       <div>
-        <div style={{fontFamily:"'Nunito'",fontSize:16,fontWeight:800,color:T.text}}>{profile.name} 👋</div>
-        <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD}}>{profile.city}</div>
+        <div style={{fontFamily:"'Nunito'",fontSize:17,fontWeight:800,color:T.text}}>{profile.name}</div>
+        <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD}}>📍 {profile.city}</div>
       </div>
     </div>
-    <Card style={{padding:"12px 16px",marginBottom:14}}><XPBar xp={profile.xp||0}/></Card>
-    <Btn full onClick={onStart} style={{padding:20,fontSize:17,marginBottom:20,animation:"glow 2s ease-in-out infinite"}}>⚡ Conversation (60s)</Btn>
+
+    <Card style={{padding:"14px 18px",marginBottom:16}}>
+      <XPBar xp={profile.xp||0}/>
+    </Card>
+
+    <button onClick={onStart} style={{width:"100%",padding:"20px 24px",borderRadius:20,border:"none",cursor:"pointer",background:T.accentGrad,color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:16,boxShadow:`0 8px 36px ${T.accentGlow}`,animation:"glow 2.5s ease-in-out infinite",position:"relative",overflow:"hidden"}}>
+      {t.startChat}
+      <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(255,255,255,.1),transparent)",pointerEvents:"none"}}/>
+    </button>
+
     <Card style={{padding:18}}>
-      <div style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:800,color:T.textD,marginBottom:10,textTransform:"uppercase",letterSpacing:1.5}}>🎁 Bonus</div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-        {BONUS_TYPES.map(b=><div key={b.id} style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:12,background:T.surfAlt,border:`1px solid ${T.border}`,fontSize:13}}>
-          <span>{b.icon}</span>
-          <span style={{fontFamily:"'Nunito'",fontWeight:700,color:T.text}}>{b.name}</span>
-          <span style={{fontFamily:"'Nunito'",fontWeight:800,color:(bonuses?.[b.id]||0)>0?T.gold:T.textD,marginLeft:2}}>{bonuses?.[b.id]||0}</span>
+      <Label>🎁 {t.bonusSection}</Label>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        {bonusTypes.map(b=><div key={b.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:14,background:T.surfAlt,border:`1px solid ${T.border}`}}>
+          <span style={{fontSize:18}}>{b.icon}</span>
+          <div>
+            <div style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:700,color:T.textS}}>{b.name}</div>
+            <div style={{fontFamily:"'Nunito'",fontSize:18,fontWeight:900,color:(bonuses?.[b.id]||0)>0?T.gold:T.textD}}>{bonuses?.[b.id]||0}</div>
+          </div>
         </div>)}
       </div>
     </Card>
   </div>;
 }
 
-// ═══ MATCHES + CHAT ═══
+// ── MATCHES ──
 
 function MatchesTab({myUid,matches,onBlock}) {
   const T = useT();
+  const {t} = useL();
   const [openId,setOpenId] = useState(null);
   const [msgs,setMsgs] = useState([]);
   const [text,setText] = useState("");
@@ -294,82 +414,80 @@ function MatchesTab({myUid,matches,onBlock}) {
   const current = matches.find(m=>m.matchId===openId);
 
   useEffect(()=>{
-    if (!openId) {setMsgs([]);return;}
+    if (!openId){setMsgs([]);return;}
     const q = query(collection(db,"matches",openId,"messages"),orderBy("createdAt","asc"));
-    const unsub = onSnapshot(q,snap=>setMsgs(snap.docs.map(d=>({id:d.id,...d.data()}))));
-    return ()=>unsub();
+    return onSnapshot(q,snap=>setMsgs(snap.docs.map(d=>({id:d.id,...d.data()}))));
   },[openId]);
 
   useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[msgs]);
 
   async function send() {
     if (!text.trim()||!openId) return;
-    const t=text.trim(); setText(""); inputRef.current?.focus();
-    await addDoc(collection(db,"matches",openId,"messages"),{senderId:myUid,text:t,createdAt:serverTimestamp()});
-    await updateDoc(doc(db,"matches",openId),{lastMessage:t});
+    const txt=text.trim(); setText(""); inputRef.current?.focus();
+    await addDoc(collection(db,"matches",openId,"messages"),{senderId:myUid,text:txt,createdAt:serverTimestamp()});
+    await updateDoc(doc(db,"matches",openId),{lastMessage:txt});
   }
 
   async function handleReport(reason) {
     if (!current) return;
     await addDoc(collection(db,"reports"),{reporter:myUid,reported:current.otherId,reason,createdAt:serverTimestamp()});
     setShowReport(false);
-    if (confirm("Signalement envoyé. Bloquer cette personne ?")) {
-      await onBlock(current.otherId);
-      setOpenId(null);
-    }
+    if (confirm("Report sent. Block this person?")) {await onBlock(current.otherId);setOpenId(null);}
   }
 
-  // Chat view (fullscreen)
-  if (openId && current) {
-    return <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:999,background:T.bg,display:"flex",flexDirection:"column"}}>
-      {showReport&&<div style={{position:"fixed",inset:0,zIndex:1000,background:T.overlay,backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-        <Card style={{padding:24,maxWidth:360,width:"100%"}}>
-          <h3 style={{fontFamily:"'Nunito'",fontSize:17,fontWeight:800,color:T.text,marginBottom:14}}>🚩 Signaler</h3>
-          {["Inapproprié","Spam","Faux profil","Harcèlement","Autre"].map(r=><button key={r} onClick={()=>handleReport(r)} style={{display:"block",width:"100%",padding:11,marginBottom:8,borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textS,fontFamily:"'Nunito'",fontSize:14,fontWeight:600,cursor:"pointer",textAlign:"left"}}>{r}</button>)}
-          <button onClick={()=>setShowReport(false)} style={{marginTop:8,width:"100%",padding:11,borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textD,fontFamily:"'Nunito'",fontSize:14,cursor:"pointer"}}>Annuler</button>
-        </Card>
-      </div>}
+  const reasons = [t.inappropriate,t.spam,t.fakeProfile,t.harassment,t.other];
 
-      <div style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
-        <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:T.textS,fontSize:20,cursor:"pointer"}}>←</button>
-        {current.photos?.[0]&&<img src={current.photos[0]} style={{width:36,height:36,borderRadius:"50%",objectFit:"cover",border:`2px solid ${T.accent}`}}/>}
-        <span style={{fontFamily:"'Nunito'",fontSize:15,fontWeight:700,color:T.text,flex:1}}>{current.name}</span>
-        <button onClick={()=>setShowReport(true)} style={{background:"none",border:"none",fontSize:16,cursor:"pointer"}}>🚩</button>
+  if (openId&&current) return <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:999,background:T.bg,display:"flex",flexDirection:"column"}}>
+    {showReport&&<ReportModal title={t.reportTitle} reasons={reasons} cancel={t.cancel} onReport={handleReport} onClose={()=>setShowReport(false)}/>}
+    <div style={{padding:"12px 16px",display:"flex",alignItems:"center",gap:12,borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
+      <button onClick={()=>setOpenId(null)} style={{background:"none",border:"none",color:T.textS,cursor:"pointer",padding:4,display:"flex",alignItems:"center"}}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      {current.photos?.[0]&&<img src={current.photos[0]} style={{width:36,height:36,borderRadius:10,objectFit:"cover",border:`2px solid ${T.accent}`}}/>}
+      <span style={{fontFamily:"'Nunito'",fontSize:15,fontWeight:700,color:T.text,flex:1}}>{current.name}</span>
+      <button onClick={()=>setShowReport(true)} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",color:T.textD}}>🚩</button>
+    </div>
+    <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:16}}>
+      {msgs.length===0&&<div style={{textAlign:"center",padding:48,fontFamily:"'Nunito'",color:T.textD,fontSize:14}}>{t.sendFirst}</div>}
+      {msgs.map(m=>{const mine=m.senderId===myUid;return<div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
+        <div style={{maxWidth:"72%",padding:"10px 15px",borderRadius:18,borderBottomRightRadius:mine?4:18,borderBottomLeftRadius:mine?18:4,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'Nunito'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
+      </div>;})}
+    </div>
+    <div style={{padding:"10px 12px",borderTop:`1px solid ${T.border}`,background:T.surface,display:"flex",gap:8,flexShrink:0}}>
+      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();send();}}} placeholder={t.typeMessage} autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none"}}/>
+      <button onClick={send} style={{width:44,height:44,borderRadius:12,border:"none",background:text.trim()?T.accentGrad:T.border,color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>↑</button>
+    </div>
+  </div>;
+
+  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90}}>
+    <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.text,margin:"0 0 18px"}}>{t.matches}</h2>
+    {matches.length===0&&<div style={{textAlign:"center",padding:"60px 20px"}}>
+      <div style={{width:64,height:64,borderRadius:20,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </div>
-
-      <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:14}}>
-        {msgs.length===0&&<div style={{textAlign:"center",padding:40,fontFamily:"'Nunito'",color:T.textD}}>💬 Envoie le premier message !</div>}
-        {msgs.map(m=>{const mine=m.senderId===myUid;return<div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:7}}>
-          <div style={{maxWidth:"75%",padding:"9px 15px",borderRadius:20,borderBottomRightRadius:mine?5:20,borderBottomLeftRadius:mine?20:5,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'Nunito'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
-        </div>;})}
-      </div>
-
-      <div style={{padding:"10px 12px",borderTop:`1px solid ${T.border}`,background:T.surface,display:"flex",gap:8,flexShrink:0}}>
-        <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();send();}}} placeholder="Message..." autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none"}}/>
-        <button onClick={send} style={{width:44,height:44,borderRadius:12,border:"none",background:text.trim()?T.accentGrad:T.input,color:"#fff",fontSize:17,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>↑</button>
-      </div>
-    </div>;
-  }
-
-  // Match list
-  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:80}}>
-    <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.text,margin:"0 0 16px"}}>💬 Matchs</h2>
-    {matches.length===0&&<div style={{textAlign:"center",padding:"50px 20px"}}><div style={{fontSize:44,marginBottom:10}}>🔮</div><p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textD}}>Pas encore de matchs</p></div>}
-    {matches.map(m=><div key={m.matchId} onClick={()=>setOpenId(m.matchId)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",marginBottom:10,borderRadius:20,background:T.card,border:`1px solid ${T.border}`,cursor:"pointer"}}>
-      {m.photos?.[0]?<img src={m.photos[0]} style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",border:`2px solid ${T.accent}`}}/>:<div style={{width:48,height:48,borderRadius:"50%",background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff"}}>{m.name?.[0]}</div>}
+      <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textD}}>{t.noMatches}</p>
+    </div>}
+    {matches.map(m=><div key={m.matchId} onClick={()=>setOpenId(m.matchId)}
+      style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:10,borderRadius:18,background:T.card,border:`1px solid ${T.border}`,cursor:"pointer"}}
+      onMouseEnter={e=>e.currentTarget.style.transform="scale(1.01)"}
+      onMouseLeave={e=>e.currentTarget.style.transform="none"}>
+      {m.photos?.[0]
+        ?<img src={m.photos[0]} style={{width:50,height:50,borderRadius:14,objectFit:"cover",border:`2px solid ${T.accent}`}}/>
+        :<div style={{width:50,height:50,borderRadius:14,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff"}}>{m.name?.[0]}</div>}
       <div style={{flex:1,minWidth:0}}>
-        <div style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:700,color:T.text}}>{m.name}{m.age?`, ${m.age}`:""}</div>
-        <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.lastMessage||"Nouveau match 👋"}</div>
+        <div style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:700,color:T.text,marginBottom:2}}>{m.name}{m.age?`, ${m.age}`:""}</div>
+        <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.lastMessage||t.newMatch}</div>
       </div>
-      <span style={{color:T.textD}}>›</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>)}
   </div>;
 }
 
-// ═══ PROFILE ═══
+// ── PROFILE ──
 
-function ProfileTab({user,profile,setProfile,onLogout}) {
+function ProfileTab({user,profile,setProfile,onLogout,lang,setLang,thm,setTheme}) {
   const T = useT();
+  const {t} = useL();
   const [editing,setEditing] = useState(false);
   const [nm,setNm] = useState(profile.name||"");
   const [ag,setAg] = useState(profile.age||"");
@@ -379,66 +497,92 @@ function ProfileTab({user,profile,setProfile,onLogout}) {
   const [ph,setPh] = useState(profile.photos||[]);
   const [saving,setSaving] = useState(false);
   const [upIdx,setUpIdx] = useState(-1);
+  const ints = INTS[lang];
 
   async function uploadPhoto(idx,file) {
     setUpIdx(idx);
     try {const url=await upImg(file);const np=[...ph];np[idx]=url;setPh(np);await updateDoc(doc(db,"users",user.uid),{photos:np});setProfile(p=>({...p,photos:np}));}catch(e){alert(e.message);}
     setUpIdx(-1);
   }
-  function removePhoto(idx) {const np=ph.filter((_,i)=>i!==idx);setPh(np);updateDoc(doc(db,"users",user.uid),{photos:np});setProfile(p=>({...p,photos:np}));}
+  function removePhoto(idx){const np=ph.filter((_,i)=>i!==idx);setPh(np);updateDoc(doc(db,"users",user.uid),{photos:np});setProfile(p=>({...p,photos:np}));}
   async function save() {
     setSaving(true);
     try {const d={name:nm.trim(),age:parseInt(ag),city:ct.trim(),bio:bi.trim(),interests:it};await updateDoc(doc(db,"users",user.uid),d);setProfile(p=>({...p,...d}));setEditing(false);}catch(e){alert(e.message);}
     setSaving(false);
   }
 
-  const inp = {width:"100%",padding:"11px 14px",borderRadius:12,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none",marginBottom:12};
+  const inp = {width:"100%",padding:"11px 14px",borderRadius:12,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none",marginBottom:10};
+  const pill = (active)=>({padding:"6px 18px",borderRadius:10,border:"none",background:active?T.accentGrad:"transparent",color:active?"#fff":T.textS,fontFamily:"'Nunito'",fontSize:13,fontWeight:700,cursor:"pointer",transition:"all .2s"});
 
-  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:80}}>
-    <Card style={{padding:"12px 16px",marginBottom:14}}><XPBar xp={profile.xp||0}/></Card>
+  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90}}>
+    <Card style={{padding:"14px 18px",marginBottom:14}}><XPBar xp={profile.xp||0}/></Card>
+
     <Card style={{padding:18,marginBottom:14}}>
-      <div style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:800,color:T.textD,marginBottom:10,textTransform:"uppercase"}}>Photos ({ph.length}/3)</div>
+      <Label>{t.photos} ({ph.length}/3)</Label>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
         {[0,1,2].map(i=><div key={i} style={{position:"relative"}}>
           <PhotoSlot url={ph[i]} onUp={uploadPhoto} onRm={removePhoto} idx={i}/>
-          {upIdx===i&&<div style={{position:"absolute",inset:0,borderRadius:18,background:"rgba(0,0,0,.6)",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:20,height:20,border:`2px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin .8s linear infinite"}}/></div>}
+          {upIdx===i&&<div style={{position:"absolute",inset:0,borderRadius:16,background:"rgba(0,0,0,.6)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <div style={{width:20,height:20,border:`2px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
+          </div>}
         </div>)}
       </div>
     </Card>
+
     <Card style={{padding:20,marginBottom:14}}>
-      {!editing ? <>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
-          <span style={{fontFamily:"'Nunito'",fontSize:11,fontWeight:800,color:T.textD,textTransform:"uppercase"}}>Infos</span>
-          <button onClick={()=>setEditing(true)} style={{fontFamily:"'Nunito'",fontSize:12,fontWeight:700,color:T.accent,background:"none",border:"none",cursor:"pointer"}}>✏️</button>
+      {!editing?<>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <Label>{t.infoSection}</Label>
+          <button onClick={()=>setEditing(true)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 12px",fontFamily:"'Nunito'",fontSize:12,fontWeight:700,color:T.textS,cursor:"pointer"}}>✏️ Edit</button>
         </div>
-        <div style={{fontFamily:"'Nunito'",fontSize:15,fontWeight:700,color:T.text,marginBottom:3}}>{profile.name}, {profile.age}</div>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:19,color:T.text,marginBottom:4}}>{profile.name}, {profile.age}</div>
         <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,marginBottom:10}}>📍 {profile.city}</div>
-        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textS,lineHeight:1.5,marginBottom:12}}>{profile.bio}</p>
-        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{profile.interests?.map(i=><span key={i} style={{padding:"5px 12px",borderRadius:16,fontSize:11,fontFamily:"'Nunito'",fontWeight:600,background:T.accentSoft,color:T.accent}}>{i}</span>)}</div>
-      </> : <>
-        <input value={nm} onChange={e=>setNm(e.target.value)} placeholder="Prénom" style={inp}/>
+        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textS,lineHeight:1.6,marginBottom:12}}>{profile.bio}</p>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{profile.interests?.map(i=><span key={i} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontFamily:"'Nunito'",fontWeight:600,background:T.accentSoft,color:T.accent}}>{i}</span>)}</div>
+      </>:<>
+        <input value={nm} onChange={e=>setNm(e.target.value)} placeholder={t.firstName} style={inp}/>
         <div style={{display:"flex",gap:8}}>
           <input type="number" value={ag} onChange={e=>setAg(e.target.value)} style={{...inp,width:80}}/>
-          <input value={ct} onChange={e=>setCt(e.target.value)} placeholder="Ville" style={{...inp,flex:1}}/>
+          <input value={ct} onChange={e=>setCt(e.target.value)} placeholder={t.city} style={{...inp,flex:1}}/>
         </div>
         <textarea value={bi} onChange={e=>setBi(e.target.value.slice(0,150))} rows={3} style={{...inp,resize:"none"}}/>
-        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:14}}>
-          {INTS.map(t=>{const a=it.includes(t);return<button key={t} onClick={()=>setIt(p=>a?p.filter(x=>x!==t):p.length<5?[...p,t]:p)} style={{padding:"6px 12px",borderRadius:16,fontSize:11,fontFamily:"'Nunito'",fontWeight:600,cursor:"pointer",border:`1px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS}}>{t}</button>;})}
+        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
+          {ints.map(tag=>{const a=it.includes(tag);return<button key={tag} onClick={()=>setIt(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"6px 12px",borderRadius:16,fontSize:12,fontFamily:"'Nunito'",fontWeight:600,cursor:"pointer",border:`1px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS}}>{tag}</button>;})}
         </div>
         <div style={{display:"flex",gap:8}}>
-          <Btn full onClick={save} disabled={saving}>{saving?"...":"✓ Sauver"}</Btn>
+          <Btn full onClick={save} disabled={saving}>{saving?"…":t.save}</Btn>
           <Btn variant="ghost" onClick={()=>setEditing(false)}>✕</Btn>
         </div>
       </>}
     </Card>
-    <Btn variant="danger" full onClick={onLogout}>Déconnexion</Btn>
+
+    <Card style={{padding:20,marginBottom:14}}>
+      <Label>{t.settings}</Label>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <span style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:600,color:T.text}}>{t.language}</span>
+        <div style={{display:"flex",background:T.surfAlt,borderRadius:12,padding:3,gap:2}}>
+          {["en","fr"].map(l=><button key={l} onClick={()=>setLang(l)} style={pill(lang===l)}>{l.toUpperCase()}</button>)}
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <span style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:600,color:T.text}}>{t.theme}</span>
+        <div style={{display:"flex",background:T.surfAlt,borderRadius:12,padding:3,gap:2}}>
+          {[["dark","🌙"],["light","☀️"]].map(([v,icon])=><button key={v} onClick={()=>setTheme(v)} style={pill(thm===v)}>{icon}</button>)}
+        </div>
+      </div>
+    </Card>
+
+    <Btn variant="danger" full onClick={onLogout}>{t.logout}</Btn>
   </div>;
 }
 
-// ═══ BLIND CHAT ═══
+// ── BLIND CHAT ──
 
-function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport}) {
+function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport,lang}) {
   const T = useT();
+  const {t} = useL();
+  const bonusTypes = BONUS_TYPES[lang];
+  const icebreakers = ICEBREAKERS[lang];
   const [msgs,setMsgs] = useState([]);
   const [text,setText] = useState("");
   const [timeLeft,setTimeLeft] = useState(CHAT_DUR);
@@ -455,10 +599,7 @@ function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport}) 
   },[chatId]);
 
   useEffect(()=>{
-    return onSnapshot(doc(db,"blindChats",chatId),snap=>{
-      const d = snap.data();
-      if (d?.endTime) setEndTime(d.endTime);
-    });
+    return onSnapshot(doc(db,"blindChats",chatId),snap=>{const d=snap.data();if(d?.endTime)setEndTime(d.endTime);});
   },[chatId]);
 
   useEffect(()=>{
@@ -466,7 +607,7 @@ function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport}) 
     const iv = setInterval(()=>{
       const left = Math.max(0,Math.round((new Date(endTime).getTime()-Date.now())/1000));
       setTimeLeft(left);
-      if (left<=0 && !doneRef.current) {doneRef.current=true;clearInterval(iv);onTimeUp();}
+      if (left<=0&&!doneRef.current){doneRef.current=true;clearInterval(iv);onTimeUp();}
     },500);
     return ()=>clearInterval(iv);
   },[endTime,onTimeUp]);
@@ -474,76 +615,79 @@ function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport}) 
   useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[msgs,reveals]);
 
   async function useBonus(id) {
-    const c = bonuses[id]||0; if (c<=0) return; onUseBonus(id);
-    if (id==="city"&&partner) setReveals(r=>[...r,`📍 ${partner.city||"?"}`]);
-    if (id==="peek"&&partner) {const int=partner.interests?.[Math.floor(Math.random()*(partner.interests?.length||1))];setReveals(r=>[...r,`👀 ${int||"?"}`]);}
-    if (id==="ice") {const q=ICEBREAKERS[Math.floor(Math.random()*ICEBREAKERS.length)];await addDoc(collection(db,"blindChats",chatId,"messages"),{senderId:"system",text:`🎲 ${q}`,createdAt:serverTimestamp()});}
-    if (id==="anon"&&partner) {const a=partner.age;setReveals(r=>[...r,`🕶️ ${a?a<22?"18-21":a<25?"22-24":a<28?"25-27":"28+":"?"}`]);}
+    const c=bonuses[id]||0; if(c<=0)return; onUseBonus(id);
+    if(id==="city"&&partner) setReveals(r=>[...r,`📍 ${partner.city||"?"}`]);
+    if(id==="peek"&&partner){const int=partner.interests?.[Math.floor(Math.random()*(partner.interests?.length||1))];setReveals(r=>[...r,`👀 ${int||"?"}`]);}
+    if(id==="ice"){const q=icebreakers[Math.floor(Math.random()*icebreakers.length)];await addDoc(collection(db,"blindChats",chatId,"messages"),{senderId:"system",text:`🎲 ${q}`,createdAt:serverTimestamp()});}
+    if(id==="anon"&&partner){const a=partner.age;setReveals(r=>[...r,`🕶️ ${a?a<22?"18-21":a<25?"22-24":a<28?"25-27":"28+":"?"}`]);}
   }
 
   async function send() {
     if (!text.trim()) return;
-    const t=text.trim(); setText(""); inputRef.current?.focus();
-    await addDoc(collection(db,"blindChats",chatId,"messages"),{senderId:myUid,text:t,createdAt:serverTimestamp()});
+    const txt=text.trim(); setText(""); inputRef.current?.focus();
+    await addDoc(collection(db,"blindChats",chatId,"messages"),{senderId:myUid,text:txt,createdAt:serverTimestamp()});
   }
 
   async function handleReport(reason) {
     await onReport(reason);
     setShowReport(false);
-    if (confirm("Signalement envoyé. Bloquer ?")) {doneRef.current=true;onTimeUp();}
+    if (confirm("Report sent. Block?")) {doneRef.current=true;onTimeUp();}
   }
 
-  return <div style={{display:"flex",flexDirection:"column",height:"100vh",maxWidth:440,margin:"0 auto"}}>
-    {showReport&&<div style={{position:"fixed",inset:0,zIndex:200,background:T.overlay,backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <Card style={{padding:24,maxWidth:340,width:"100%"}}>
-        <h3 style={{fontFamily:"'Nunito'",fontSize:16,fontWeight:800,color:T.text,marginBottom:12}}>🚩 Signaler</h3>
-        {["Inapproprié","Spam","Faux profil","Harcèlement","Autre"].map(r=><button key={r} onClick={()=>handleReport(r)} style={{display:"block",width:"100%",padding:10,marginBottom:6,borderRadius:10,border:`1px solid ${T.border}`,background:"transparent",color:T.textS,fontFamily:"'Nunito'",fontSize:13,cursor:"pointer",textAlign:"left"}}>{r}</button>)}
-        <button onClick={()=>setShowReport(false)} style={{marginTop:6,width:"100%",padding:10,borderRadius:10,border:`1px solid ${T.border}`,background:"transparent",color:T.textD,fontFamily:"'Nunito'",fontSize:13,cursor:"pointer"}}>Annuler</button>
-      </Card>
-    </div>}
+  const reasons = [t.inappropriate,t.spam,t.fakeProfile,t.harassment,t.other];
 
-    <div style={{padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <div style={{width:36,height:36,borderRadius:"50%",background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,color:"#fff",fontFamily:"'Nunito'"}}>?</div>
-        <div style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:700,color:T.text}}>Inconnu·e</div>
+  return <div style={{display:"flex",flexDirection:"column",height:"100vh",maxWidth:440,margin:"0 auto"}}>
+    {showReport&&<ReportModal title={t.reportTitle} reasons={reasons} cancel={t.cancel} onReport={handleReport} onClose={()=>setShowReport(false)}/>}
+
+    <div style={{padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{width:38,height:38,borderRadius:12,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:900,color:"#fff",fontFamily:"'Nunito'"}}>?</div>
+        <span style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:700,color:T.text}}>{t.unknown}</span>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:6}}>
-        <button onClick={()=>setShowReport(true)} style={{background:"none",border:"none",fontSize:15,cursor:"pointer"}}>🚩</button>
-        <div style={{width:80,height:5,borderRadius:3,background:T.border,overflow:"hidden"}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <button onClick={()=>setShowReport(true)} style={{background:"none",border:"none",fontSize:14,cursor:"pointer",color:T.textD}}>🚩</button>
+        <div style={{width:72,height:5,borderRadius:3,background:T.border,overflow:"hidden"}}>
           <div style={{width:`${Math.min((timeLeft/CHAT_DUR)*100,100)}%`,height:"100%",borderRadius:3,background:timeLeft<=10?T.danger:T.accentGrad,transition:"width .5s"}}/>
         </div>
-        <span style={{fontFamily:"'Nunito'",fontWeight:800,fontSize:13,color:timeLeft<=10?T.danger:T.accent,fontVariantNumeric:"tabular-nums",minWidth:30}}>{timeLeft}s</span>
+        <span style={{fontFamily:"'Nunito'",fontWeight:800,fontSize:13,color:timeLeft<=10?T.danger:T.accent,minWidth:28,textAlign:"right"}}>{timeLeft}s</span>
       </div>
     </div>
 
-    <div style={{display:"flex",gap:5,padding:"6px 10px",overflowX:"auto",borderBottom:`1px solid ${T.border}`,background:T.surfAlt,flexShrink:0}}>
-      {BONUS_TYPES.map(b=>{const c=bonuses[b.id]||0;return<button key={b.id} disabled={c<=0} onClick={()=>useBonus(b.id)} style={{display:"flex",alignItems:"center",gap:3,padding:"5px 10px",borderRadius:10,border:`1px solid ${c>0?T.gold+"44":T.border}`,background:c>0?T.goldSoft:"transparent",cursor:c>0?"pointer":"not-allowed",opacity:c>0?1:0.4,whiteSpace:"nowrap",flexShrink:0,fontSize:12}}><span>{b.icon}</span><span style={{fontFamily:"'Nunito'",fontSize:10,fontWeight:700,color:c>0?T.gold:T.textD}}>{c}</span></button>;})}
+    <div style={{display:"flex",gap:6,padding:"8px 12px",overflowX:"auto",borderBottom:`1px solid ${T.border}`,background:T.surfAlt,flexShrink:0}}>
+      {bonusTypes.map(b=>{const c=bonuses[b.id]||0;return<button key={b.id} disabled={c<=0} onClick={()=>useBonus(b.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:10,border:`1px solid ${c>0?T.gold+"44":T.border}`,background:c>0?T.goldSoft:"transparent",cursor:c>0?"pointer":"default",opacity:c>0?1:0.35,whiteSpace:"nowrap",flexShrink:0,fontFamily:"'Nunito'",fontSize:12,fontWeight:700,color:c>0?T.gold:T.textD}}>
+        <span>{b.icon}</span><span>{b.name}</span><span style={{marginLeft:3,opacity:.7}}>{c}</span>
+      </button>;})}
     </div>
 
-    <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:14}}>
-      {msgs.length===0&&reveals.length===0&&<div style={{textAlign:"center",padding:30,fontFamily:"'Nunito'",color:T.textD}}>👋 Brise la glace !</div>}
-      {reveals.map((r,i)=><div key={"r"+i} style={{textAlign:"center",margin:"6px 0",padding:"8px 14px",borderRadius:14,background:T.goldSoft,border:`1px solid ${T.gold}33`,fontFamily:"'Nunito'",fontSize:12,fontWeight:600,color:T.gold}}>{r}</div>)}
+    <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:16}}>
+      {msgs.length===0&&reveals.length===0&&<div style={{textAlign:"center",padding:40,fontFamily:"'Nunito'",color:T.textD,fontSize:14}}>{t.iceBreak}</div>}
+      {reveals.map((r,i)=><div key={"r"+i} style={{textAlign:"center",margin:"6px 0",padding:"8px 14px",borderRadius:14,background:T.goldSoft,border:`1px solid ${T.gold}33`,fontFamily:"'Nunito'",fontSize:13,fontWeight:600,color:T.gold}}>{r}</div>)}
       {msgs.map(m=>{
         const mine=m.senderId===myUid; const sys=m.senderId==="system";
-        if (sys) return <div key={m.id} style={{display:"flex",justifyContent:"center",marginBottom:7}}><div style={{padding:"8px 14px",borderRadius:14,background:`${T.sec}12`,border:`1px solid ${T.sec}22`,fontFamily:"'Nunito'",fontSize:12,color:T.sec,fontWeight:600}}>{m.text}</div></div>;
-        return <div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:7}}>
-          <div style={{maxWidth:"75%",padding:"9px 14px",borderRadius:20,borderBottomRightRadius:mine?5:20,borderBottomLeftRadius:mine?20:5,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'Nunito'"}}>{m.text}</div>
+        if(sys) return <div key={m.id} style={{display:"flex",justifyContent:"center",marginBottom:8}}><div style={{padding:"8px 16px",borderRadius:14,background:`${T.sec}12`,border:`1px solid ${T.sec}22`,fontFamily:"'Nunito'",fontSize:12,color:T.sec,fontWeight:600}}>{m.text}</div></div>;
+        return <div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
+          <div style={{maxWidth:"72%",padding:"10px 15px",borderRadius:18,borderBottomRightRadius:mine?4:18,borderBottomLeftRadius:mine?18:4,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'Nunito'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
         </div>;
       })}
     </div>
 
     <div style={{padding:"8px 12px",borderTop:`1px solid ${T.border}`,background:T.surface,display:"flex",gap:8,flexShrink:0}}>
-      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Écris..." autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none"}}/>
-      <button onClick={send} style={{width:44,height:44,borderRadius:12,border:"none",background:text.trim()?T.accentGrad:T.input,color:"#fff",fontSize:17,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>↑</button>
+      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={t.typeMessage} autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Nunito'",outline:"none"}}/>
+      <button onClick={send} style={{width:44,height:44,borderRadius:12,border:"none",background:text.trim()?T.accentGrad:T.border,color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>↑</button>
     </div>
   </div>;
 }
 
-// ═══ MAIN APP ═══
+// ── MAIN APP ──
 
 export default function App() {
-  const [thm,setThm] = useState(()=>{try{return window.matchMedia?.("(prefers-color-scheme:light)").matches?"light":"dark";}catch{return"dark";}});
+  const [thm,setThm] = useState(()=>{try{return localStorage.getItem("bd_theme")||(window.matchMedia?.("(prefers-color-scheme:light)").matches?"light":"dark");}catch{return"dark";}});
+  const [lang,setLang] = useState(()=>{try{return localStorage.getItem("bd_lang")||"en";}catch{return"en";}});
   const T = thm==="dark"?dark:light;
+  const t = TR[lang];
+
+  function setTheme(v){setThm(v);try{localStorage.setItem("bd_theme",v);}catch{}}
+  function changeLang(l){setLang(l);try{localStorage.setItem("bd_lang",l);}catch{}}
 
   const [screen,setScreen] = useState("loading");
   const [tab,setTab] = useState("home");
@@ -557,10 +701,9 @@ export default function App() {
   const [bonuses,setBonuses] = useState(DEF_BONUS);
   const cleanup = useRef([]);
 
-  function addCleanup(fn) {cleanup.current.push(fn);}
-  function runCleanup() {cleanup.current.forEach(fn=>fn());cleanup.current=[];}
+  function addCleanup(fn){cleanup.current.push(fn);}
+  function runCleanup(){cleanup.current.forEach(fn=>fn());cleanup.current=[];}
 
-  // Auth
   useEffect(()=>{
     return onAuthStateChanged(auth,async u=>{
       if (u) {
@@ -568,8 +711,8 @@ export default function App() {
         const snap = await getDoc(doc(db,"users",u.uid));
         if (snap.exists()) {
           const p = {id:u.uid,name:u.displayName||snap.data().name,...snap.data()};
-          setProfile(p); setBonuses(p.bonuses||DEF_BONUS);
-          if (p.profileComplete) {setScreen("main");listenMatches(u.uid);}
+          setProfile(p);setBonuses(p.bonuses||DEF_BONUS);
+          if (p.profileComplete){setScreen("main");listenMatches(u.uid);}
           else setScreen("setup");
         } else setScreen("setup");
       } else {setUser(null);setProfile(null);setMatches([]);setScreen("auth");}
@@ -596,91 +739,93 @@ export default function App() {
     addCleanup(unsub);
   }
 
-  async function blockUser(otherId) {
+  async function blockUser(otherId){
     await updateDoc(doc(db,"users",user.uid),{blocked:arrayUnion(otherId)});
-    runCleanup(); listenMatches(user.uid);
+    runCleanup();listenMatches(user.uid);
   }
 
-  async function addXP(amount) {
-    const newXP = (profile?.xp||0)+amount;
+  async function addXP(amount){
+    const newXP=(profile?.xp||0)+amount;
     setProfile(p=>({...p,xp:newXP}));
     await updateDoc(doc(db,"users",user.uid),{xp:newXP});
   }
 
-  async function consumeBonus(id) {
-    const nb = {...bonuses,[id]:Math.max(0,(bonuses[id]||0)-1)};
+  async function consumeBonus(id){
+    const nb={...bonuses,[id]:Math.max(0,(bonuses[id]||0)-1)};
     setBonuses(nb);
     await updateDoc(doc(db,"users",user.uid),{bonuses:nb});
   }
 
-  // ═══ MATCHMAKING ═══
   async function startChat() {
     setScreen("waiting");
-    const myUid = user.uid;
-    const joinTime = Date.now();
+    const myUid=user.uid;
+    let matched=false;
+    let roomUnsub=()=>{};
+    let chatUnsub=()=>{};
+    let tmout;
+    function done(){roomUnsub();chatUnsub();clearTimeout(tmout);}
 
-    // Clean up any stale entry
-    await deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
-
-    // Check if someone is waiting
-    const waitSnap = await getDocs(query(collection(db,"waitingRoom"),where("status","==","waiting")));
-    const waiters = waitSnap.docs.filter(d=>d.id!==myUid).map(d=>d.data());
-
-    if (waiters.length > 0) {
-      // Someone is waiting — I create the chat
-      const other = waiters[0];
-      // Remove them FIRST
-      await deleteDoc(doc(db,"waitingRoom",other.uid)).catch(()=>{});
-      // Load their profile
-      const pSnap = await getDoc(doc(db,"users",other.uid));
+    async function goToChat(chatDocId,otherId){
+      if(matched)return;
+      matched=true;done();
+      await deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
+      const pSnap=await getDoc(doc(db,"users",otherId));
       setPartner(pSnap.exists()?pSnap.data():null);
-      // Create chat
-      const endTime = new Date(Date.now()+CHAT_DUR*1000).toISOString();
-      const chatRef = await addDoc(collection(db,"blindChats"),{
-        users:[myUid,other.uid], status:"active",
-        user1Decision:null, user2Decision:null,
-        endTime, createdAt:serverTimestamp()
-      });
       await addXP(XP_CHAT);
-      setChatId(chatRef.id); setOtherUid(other.uid); setScreen("chat");
-
-    } else {
-      // Nobody waiting — I wait
-      await setDoc(doc(db,"waitingRoom",myUid),{uid:myUid,status:"waiting",createdAt:serverTimestamp()});
-
-      // Listen for a blindChat that includes me, created AFTER I joined
-      const chatQ = query(collection(db,"blindChats"),where("users","array-contains",myUid),where("status","==","active"));
-      const unsub = onSnapshot(chatQ,async snap=>{
-        for (const d of snap.docs) {
-          const data = d.data();
-          // IGNORE old chats
-          const chatCreated = data.createdAt?.toMillis?.() || 0;
-          if (chatCreated < joinTime - 5000) continue;
-          const otherId = data.users.find(id=>id!==myUid);
-          if (otherId) {
-            unsub();
-            await deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
-            const pSnap = await getDoc(doc(db,"users",otherId));
-            setPartner(pSnap.exists()?pSnap.data():null);
-            await addXP(XP_CHAT);
-            setChatId(d.id); setOtherUid(otherId); setScreen("chat");
-            return;
-          }
-        }
-      });
-
-      const timeout = setTimeout(()=>{
-        unsub();
-        deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
-        setScreen("main");
-        alert("Personne disponible. Réessaie !");
-      },WAIT_TIMEOUT*1000);
-
-      addCleanup(()=>{unsub();clearTimeout(timeout);});
+      setChatId(chatDocId);setOtherUid(otherId);setScreen("chat");
     }
+
+    await deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
+    await setDoc(doc(db,"waitingRoom",myUid),{uid:myUid,status:"waiting",createdAt:serverTimestamp()});
+
+    chatUnsub=onSnapshot(
+      query(collection(db,"blindChats"),where("users","array-contains",myUid),where("status","==","active")),
+      async snap=>{
+        if(matched)return;
+        const now=new Date().toISOString();
+        for(const d of snap.docs){
+          const data=d.data();
+          if(data.endTime&&data.endTime<now)continue;
+          const otherId=data.users.find(id=>id!==myUid);
+          if(otherId){await goToChat(d.id,otherId);return;}
+        }
+      }
+    );
+
+    roomUnsub=onSnapshot(
+      query(collection(db,"waitingRoom"),where("status","==","waiting")),
+      async snap=>{
+        if(matched)return;
+        const others=snap.docs.filter(d=>d.id!==myUid);
+        if(!others.length)return;
+        const otherId=others[0].id;
+        if(myUid>=otherId)return;
+        matched=true;done();
+        await Promise.all([
+          deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{}),
+          deleteDoc(doc(db,"waitingRoom",otherId)).catch(()=>{})
+        ]);
+        const endTime=new Date(Date.now()+CHAT_DUR*1000).toISOString();
+        const chatRef=await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
+        const pSnap=await getDoc(doc(db,"users",otherId));
+        setPartner(pSnap.exists()?pSnap.data():null);
+        await addXP(XP_CHAT);
+        setChatId(chatRef.id);setOtherUid(otherId);setScreen("chat");
+      }
+    );
+
+    tmout=setTimeout(()=>{
+      if(matched)return;
+      done();
+      deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
+      setScreen("main");
+      alert(t.noMatches);
+    },WAIT_TIMEOUT*1000);
+
+    addCleanup(()=>{done();deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});});
   }
 
-  function cancelWaiting() {
+  function cancelWaiting(){
     runCleanup();
     deleteDoc(doc(db,"waitingRoom",user.uid)).catch(()=>{});
     setScreen("main");
@@ -688,35 +833,33 @@ export default function App() {
 
   const handleTimeUp = useCallback(()=>setScreen("decision"),[]);
 
-  // Decision
-  async function decide(decision) {
-    const chatSnap = await getDoc(doc(db,"blindChats",chatId));
-    const data = chatSnap.data();
-    const isUser1 = data.users[0]===user.uid;
-    const myField = isUser1?"user1Decision":"user2Decision";
-    const otherField = isUser1?"user2Decision":"user1Decision";
-
+  async function decide(decision){
+    const chatSnap=await getDoc(doc(db,"blindChats",chatId));
+    const data=chatSnap.data();
+    const isUser1=data.users[0]===user.uid;
+    const myField=isUser1?"user1Decision":"user2Decision";
+    const otherField=isUser1?"user2Decision":"user1Decision";
     await updateDoc(doc(db,"blindChats",chatId),{[myField]:decision});
-    const updated = (await getDoc(doc(db,"blindChats",chatId))).data();
-
-    if (updated[otherField]) {
+    const updated=(await getDoc(doc(db,"blindChats",chatId))).data();
+    if(updated[otherField]){
       await resolveMatch(decision,updated[otherField]);
     } else {
       setScreen("waitDec");
-      const timeout = setTimeout(()=>{setScreen("noMatch");},DECISION_TIMEOUT*1000);
-      const unsub = onSnapshot(doc(db,"blindChats",chatId),async snap=>{
-        const d = snap.data();
-        if (d?.[otherField]) {unsub();clearTimeout(timeout);await resolveMatch(decision,d[otherField]);}
+      const timeout=setTimeout(()=>{updateDoc(doc(db,"blindChats",chatId),{status:"ended"}).catch(()=>{});setScreen("noMatch");},DECISION_TIMEOUT*1000);
+      const unsub=onSnapshot(doc(db,"blindChats",chatId),async snap=>{
+        const d=snap.data();
+        if(d?.[otherField]){unsub();clearTimeout(timeout);await resolveMatch(decision,d[otherField]);}
       });
       addCleanup(()=>{unsub();clearTimeout(timeout);});
     }
   }
 
-  async function resolveMatch(mine,theirs) {
-    if (mine==="match"&&theirs==="match") {
-      if (user.uid<otherUid) await addDoc(collection(db,"matches"),{users:[user.uid,otherUid],createdAt:serverTimestamp(),lastMessage:null});
+  async function resolveMatch(mine,theirs){
+    await updateDoc(doc(db,"blindChats",chatId),{status:"ended"}).catch(()=>{});
+    if(mine==="match"&&theirs==="match"){
+      if(user.uid<otherUid)await addDoc(collection(db,"matches"),{users:[user.uid,otherUid],createdAt:serverTimestamp(),lastMessage:null});
       await addXP(XP_MATCH);
-      const snap = await getDoc(doc(db,"users",otherUid));
+      const snap=await getDoc(doc(db,"users",otherUid));
       setOtherProfile(snap.exists()?snap.data():{name:"?"});
       setScreen("matchReveal");
     } else {
@@ -724,30 +867,32 @@ export default function App() {
     }
   }
 
-  async function reportBlind(reason) {
+  async function reportBlind(reason){
     await addDoc(collection(db,"reports"),{reporter:user.uid,reported:otherUid,reason,chatId,createdAt:serverTimestamp()});
   }
 
-  // ═══ RENDER ═══
+  const center = {display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",padding:40,textAlign:"center"};
+
   return <TC.Provider value={T}>
-    <div style={{minHeight:"100vh",background:T.bg,backgroundImage:T.bgGrad,color:T.text,transition:"background .5s"}}>
+    <LC.Provider value={{lang,t}}>
+    <div style={{minHeight:"100vh",background:T.bg,backgroundImage:T.bgGrad,color:T.text,transition:"background .4s,color .4s"}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap');
-        *{box-sizing:border-box;margin:0}body{background:${T.bg}}
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:${T.bg};-webkit-font-smoothing:antialiased}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:${T.border};border-radius:3px}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-        @keyframes scaleIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-        @keyframes glow{0%,100%{box-shadow:0 4px 24px ${T.accentGlow}}50%{box-shadow:0 4px 36px ${T.accentGlow},0 0 50px ${T.accentGlow}}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        @keyframes glow{0%,100%{box-shadow:0 8px 36px ${T.accentGlow}}50%{box-shadow:0 8px 56px ${T.accentGlow},0 0 80px ${T.accentGlow}}}
         input::placeholder,textarea::placeholder{color:${T.textD}}
+        button:focus-visible{outline:2px solid ${T.accent};outline-offset:2px}
       `}</style>
 
-      <button onClick={()=>setThm(m=>m==="dark"?"light":"dark")} style={{position:"fixed",top:14,right:14,zIndex:60,width:40,height:40,borderRadius:12,background:T.card,border:`1px solid ${T.border}`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{T.toggle}</button>
-
-      {screen==="loading"&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh"}}><div style={{width:40,height:40,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin .8s linear infinite"}}/></div>}
+      {screen==="loading"&&<div style={center}>
+        <div style={{width:36,height:36,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
+      </div>}
 
       {screen==="auth"&&<AuthScreen/>}
 
@@ -756,54 +901,55 @@ export default function App() {
       {screen==="main"&&profile&&<>
         {tab==="home"&&<HomeTab profile={profile} onStart={startChat} bonuses={bonuses}/>}
         {tab==="matches"&&<MatchesTab myUid={user.uid} matches={matches} onBlock={blockUser}/>}
-        {tab==="profile"&&<ProfileTab user={user} profile={profile} setProfile={setProfile} onLogout={()=>signOut(auth)}/>}
+        {tab==="profile"&&<ProfileTab user={user} profile={profile} setProfile={setProfile} onLogout={()=>signOut(auth)} lang={lang} setLang={changeLang} thm={thm} setTheme={setTheme}/>}
         <NavBar tab={tab} setTab={setTab} n={matches.length}/>
       </>}
 
-      {screen==="waiting"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",padding:40,textAlign:"center"}}>
-        <div style={{width:56,height:56,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin 1s linear infinite",marginBottom:24}}/>
-        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.text,margin:"0 0 8px"}}>Recherche...</h2>
-        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,marginBottom:4}}>En attente d'un autre joueur</p>
-        <Btn variant="ghost" onClick={cancelWaiting} style={{marginTop:20}}>Annuler</Btn>
+      {screen==="waiting"&&<div style={center}>
+        <div style={{width:56,height:56,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin 1s linear infinite",marginBottom:28}}/>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.text,margin:"0 0 8px"}}>{t.searching}</h2>
+        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,marginBottom:4}}>{t.waitingPlayer}</p>
+        <Btn variant="ghost" onClick={cancelWaiting} style={{marginTop:24}}>{t.cancelBtn}</Btn>
       </div>}
 
-      {screen==="chat"&&chatId&&<BlindChat chatId={chatId} myUid={user.uid} partner={partner} bonuses={bonuses} onUseBonus={consumeBonus} onTimeUp={handleTimeUp} onReport={reportBlind}/>}
+      {screen==="chat"&&chatId&&<BlindChat chatId={chatId} myUid={user.uid} partner={partner} bonuses={bonuses} onUseBonus={consumeBonus} onTimeUp={handleTimeUp} onReport={reportBlind} lang={lang}/>}
 
-      {screen==="decision"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",padding:40,textAlign:"center",animation:"fadeIn .5s"}}>
-        <div style={{fontSize:52,marginBottom:20,animation:"float 2s ease-in-out infinite"}}>⏰</div>
-        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:26,color:T.text,margin:"0 0 8px"}}>Temps écoulé !</h2>
-        <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textS,marginBottom:32}}>Découvrir qui se cache derrière ?</p>
+      {screen==="decision"&&<div style={{...center,animation:"fadeIn .4s"}}>
+        <div style={{width:72,height:72,borderRadius:24,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:24,boxShadow:`0 8px 36px ${T.accentGlow}`,animation:"float 2s ease-in-out infinite"}}>⏰</div>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:28,color:T.text,margin:"0 0 10px"}}>{t.timeUp}</h2>
+        <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textS,marginBottom:36}}>{t.revealQ}</p>
         <div style={{display:"flex",gap:14}}>
-          <Btn onClick={()=>decide("match")} style={{padding:"16px 36px",fontSize:16}}>💕 Matcher</Btn>
-          <Btn variant="ghost" onClick={()=>decide("pass")} style={{padding:"16px 36px",fontSize:16}}>Passer →</Btn>
+          <Btn onClick={()=>decide("match")} style={{padding:"15px 32px",fontSize:15}}>{t.matchBtn}</Btn>
+          <Btn variant="ghost" onClick={()=>decide("pass")} style={{padding:"15px 32px",fontSize:15}}>{t.passBtn}</Btn>
         </div>
       </div>}
 
-      {screen==="waitDec"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",padding:40,textAlign:"center"}}>
-        <div style={{width:44,height:44,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin 1s linear infinite",marginBottom:20}}/>
-        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:T.text,margin:"0 0 6px"}}>En attente...</h2>
-        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,marginBottom:24}}>L'autre décide (max {DECISION_TIMEOUT}s)</p>
-        <Btn variant="ghost" onClick={()=>{runCleanup();setScreen("main");}}>← Retour</Btn>
+      {screen==="waitDec"&&<div style={center}>
+        <div style={{width:44,height:44,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin 1s linear infinite",marginBottom:24}}/>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:T.text,margin:"0 0 8px"}}>{t.waitingDec}</h2>
+        <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,marginBottom:24}}>{t.otherDecides(DECISION_TIMEOUT)}</p>
+        <Btn variant="ghost" onClick={()=>{runCleanup();setScreen("main");}}>{t.backBtn}</Btn>
       </div>}
 
-      {screen==="matchReveal"&&otherProfile&&<div style={{position:"fixed",inset:0,zIndex:100,background:T.overlay,backdropFilter:"blur(20px)",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn .4s"}}>
-        <div style={{textAlign:"center",padding:36,animation:"scaleIn .5s cubic-bezier(.34,1.56,.64,1)"}}>
-          <div style={{fontSize:64,marginBottom:16,animation:"float 2s ease-in-out infinite"}}>💕</div>
-          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:34,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 10px"}}>Match !</h2>
-          <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.gold,marginBottom:16}}>+{XP_MATCH} XP</p>
-          {otherProfile.photos?.[0]&&<img src={otherProfile.photos[0]} style={{width:110,height:110,borderRadius:"50%",objectFit:"cover",border:`3px solid ${T.accent}`,boxShadow:`0 0 50px ${T.accentGlow}`,marginBottom:12}}/>}
-          <p style={{fontFamily:"'Nunito'",fontSize:15,fontWeight:700,color:T.text,marginBottom:4}}>{otherProfile.name}, {otherProfile.age}</p>
-          <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,marginBottom:24}}>📍 {otherProfile.city}</p>
-          <Btn onClick={()=>{listenMatches(user.uid);setScreen("main");setTab("matches");}}>Super 🎉</Btn>
+      {screen==="matchReveal"&&otherProfile&&<div style={{position:"fixed",inset:0,zIndex:100,background:T.overlay,backdropFilter:"blur(24px)",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn .3s"}}>
+        <div style={{textAlign:"center",padding:36,animation:"scaleIn .4s cubic-bezier(.34,1.56,.64,1)"}}>
+          <div style={{fontSize:56,marginBottom:20,animation:"float 2s ease-in-out infinite"}}>💕</div>
+          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:36,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 8px",letterSpacing:"-0.5px"}}>{t.matchTitle}</h2>
+          <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.gold,marginBottom:20,fontWeight:700}}>+{XP_MATCH} XP</p>
+          {otherProfile.photos?.[0]&&<img src={otherProfile.photos[0]} style={{width:110,height:110,borderRadius:"50%",objectFit:"cover",border:`3px solid ${T.accent}`,boxShadow:`0 0 60px ${T.accentGlow}`,marginBottom:14,display:"block",margin:"0 auto 14px"}}/>}
+          <p style={{fontFamily:"'Playfair Display',serif",fontSize:18,color:T.text,marginBottom:4}}>{otherProfile.name}, {otherProfile.age}</p>
+          <p style={{fontFamily:"'Nunito'",fontSize:13,color:T.textD,marginBottom:28}}>📍 {otherProfile.city}</p>
+          <Btn onClick={()=>{listenMatches(user.uid);setScreen("main");setTab("matches");}}>{t.great}</Btn>
         </div>
       </div>}
 
-      {screen==="noMatch"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",padding:40,textAlign:"center",animation:"fadeIn .5s"}}>
-        <div style={{fontSize:48,marginBottom:20}}>😔</div>
-        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:24,color:T.text,margin:"0 0 8px"}}>Pas cette fois</h2>
-        <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textS,marginBottom:28}}>La prochaine sera la bonne !</p>
-        <Btn onClick={()=>setScreen("main")}>Réessayer ⚡</Btn>
+      {screen==="noMatch"&&<div style={{...center,animation:"fadeIn .4s"}}>
+        <div style={{width:72,height:72,borderRadius:24,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:24}}>😔</div>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:26,color:T.text,margin:"0 0 10px"}}>{t.noMatchTitle}</h2>
+        <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textS,marginBottom:32}}>{t.noMatchSub}</p>
+        <Btn onClick={()=>setScreen("main")}>{t.retry}</Btn>
       </div>}
     </div>
+    </LC.Provider>
   </TC.Provider>;
 }
