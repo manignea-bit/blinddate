@@ -211,6 +211,8 @@ async function updateStreak(uid, profile) {
     updates["bonuses.peek"]=increment(bonusAwarded);
     updates["bonuses.anon"]=increment(bonusAwarded);
   }
+  // +1 super like every 7 consecutive days
+  if (newStreak>0 && newStreak%7===0) updates.superLikes=increment(1);
   await updateDoc(doc(db,"users",uid),updates);
   return {streak:newStreak,bonusAwarded};
 }
@@ -228,7 +230,7 @@ async function applyReferral(newUid, code) {
 
 function getTodayStr() { return new Date().toDateString(); }
 function getDailyCount(p) { if(!p?.dailyChats||p.dailyChats.date!==getTodayStr())return 0;return p.dailyChats.count||0; }
-function canSuperLike(p) { return p?.superLikeDate!==getTodayStr(); }
+function canSuperLike(p) { return (p?.superLikes||0)>0; }
 function isSpeedDatingNow() { const n=new Date();return n.getDay()===5&&n.getHours()>=20&&n.getHours()<22; }
 
 // ── COMPONENTS ──
@@ -348,7 +350,7 @@ function AuthScreen() {
         const c=await createUserWithEmailAndPassword(auth,email,pass);
         await updateProfile(c.user,{displayName:name.trim()});
         const code=c.user.uid.slice(0,8).toUpperCase();
-        await setDoc(doc(db,"users",c.user.uid),{name:name.trim(),email,age:null,city:"",bio:"",photos:[],interests:[],personality:{},profileComplete:false,bonuses:DEF_BONUS,xp:0,blocked:[],referralCode:code,createdAt:serverTimestamp()});
+        await setDoc(doc(db,"users",c.user.uid),{name:name.trim(),email,age:null,city:"",bio:"",photos:[],interests:[],personality:{},profileComplete:false,bonuses:DEF_BONUS,xp:0,blocked:[],referralCode:code,superLikes:1,createdAt:serverTimestamp()});
         const urlRef=new URLSearchParams(window.location.search).get("ref");
         if (urlRef) {
           const ok=await applyReferral(c.user.uid,urlRef);
@@ -370,7 +372,7 @@ function AuthScreen() {
       const s=await getDoc(doc(db,"users",r.user.uid));
       if (!s.exists()){
         const code=r.user.uid.slice(0,8).toUpperCase();
-        await setDoc(doc(db,"users",r.user.uid),{name:r.user.displayName||"",email:r.user.email,age:null,city:"",bio:"",photos:r.user.photoURL?[r.user.photoURL]:[],interests:[],personality:{},profileComplete:false,bonuses:DEF_BONUS,xp:0,blocked:[],referralCode:code,createdAt:serverTimestamp()});
+        await setDoc(doc(db,"users",r.user.uid),{name:r.user.displayName||"",email:r.user.email,age:null,city:"",bio:"",photos:r.user.photoURL?[r.user.photoURL]:[],interests:[],personality:{},profileComplete:false,bonuses:DEF_BONUS,xp:0,blocked:[],referralCode:code,superLikes:1,createdAt:serverTimestamp()});
         const urlRef=new URLSearchParams(window.location.search).get("ref");
         if (urlRef){const ok=await applyReferral(r.user.uid,urlRef);if(ok)window.history.replaceState({},"",window.location.pathname);}
       }
@@ -554,10 +556,6 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
         <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:T.text}}>{profile.name}</div>
         {profile.city&&<div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,marginTop:1}}>📍 {profile.city}</div>}
       </div>
-      <div style={{textAlign:"center",padding:"6px 12px",borderRadius:12,background:datesLeft>0?T.accentSoft:T.surfAlt,border:`1px solid ${datesLeft>0?T.accent+"33":T.border}`}}>
-        <div style={{fontFamily:"'Nunito'",fontSize:18,fontWeight:900,color:datesLeft>0?T.accent:T.textD,lineHeight:1}}>{datesLeft}</div>
-        <div style={{fontFamily:"'Nunito'",fontSize:9,fontWeight:800,color:T.textS,textTransform:"uppercase",letterSpacing:.5,marginTop:2}}>left today</div>
-      </div>
     </div>
 
     {event&&(event.id==="launch"
@@ -601,10 +599,13 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
       </div>
     </Card>}
 
-    <button onClick={datesLeft>0?onStart:null} style={{width:"100%",padding:"22px 24px",borderRadius:22,border:"none",cursor:datesLeft>0?"pointer":"not-allowed",background:datesLeft>0?T.accentGrad:T.surfAlt,color:datesLeft>0?"#fff":T.textD,fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:16,boxShadow:datesLeft>0?`0 10px 40px ${T.accentGlow}`:"none",animation:datesLeft>0?"glow 2.5s ease-in-out infinite":"none",position:"relative",overflow:"hidden",opacity:datesLeft>0?1:0.6,transition:"all .3s"}}>
+    <button onClick={datesLeft>0?onStart:null} style={{width:"100%",padding:"22px 24px",borderRadius:22,border:"none",cursor:datesLeft>0?"pointer":"not-allowed",background:datesLeft>0?T.accentGrad:T.surfAlt,color:datesLeft>0?"#fff":T.textD,fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:8,boxShadow:datesLeft>0?`0 10px 40px ${T.accentGlow}`:"none",animation:datesLeft>0?"glow 2.5s ease-in-out infinite":"none",position:"relative",overflow:"hidden",opacity:datesLeft>0?1:0.6,transition:"all .3s"}}>
       {datesLeft>0?t.startChat:"🌙 Come back tomorrow"}
       {datesLeft>0&&<div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(255,255,255,.12),transparent)",pointerEvents:"none"}}/>}
     </button>
+    <div style={{textAlign:"center",marginBottom:16,fontFamily:"'Nunito'",fontSize:11,color:T.textD,fontWeight:600}}>
+      {datesLeft>0?`${datesLeft} / ${DAILY_LIMIT} blind dates remaining today`:"No more dates today — see you tomorrow 🌙"}
+    </div>
 
     <Card style={{padding:18,marginBottom:14}}>
       <Label>🎁 {t.bonusSection}</Label>
@@ -1140,15 +1141,17 @@ export default function App() {
 
   async function decide(decision){
     if(decision==="superlike"){
-      // Force match both sides immediately
-      await updateDoc(doc(db,"users",user.uid),{superLikeDate:getTodayStr()});
-      setProfile(p=>({...p,superLikeDate:getTodayStr()}));
+      const newSL=Math.max(0,(profile.superLikes||0)-1);
+      await updateDoc(doc(db,"users",user.uid),{superLikes:newSL});
+      setProfile(p=>({...p,superLikes:newSL}));
       await updateDoc(doc(db,"blindChats",chatId),{user1Decision:"match",user2Decision:"match",superLikedBy:user.uid});
       await resolveMatch("match","match");
       return;
     }
     const chatSnap=await getDoc(doc(db,"blindChats",chatId));
     const data=chatSnap.data();
+    // If other user already super liked, force match regardless
+    if(data.superLikedBy&&data.superLikedBy!==user.uid){await resolveMatch("match","match");return;}
     const isUser1=data.users[0]===user.uid;
     const myField=isUser1?"user1Decision":"user2Decision";
     const otherField=isUser1?"user2Decision":"user1Decision";
