@@ -72,12 +72,13 @@ const CHALLENGES = {
   ]
 };
 const SPECIAL_EVENTS = [
-  {id:"launch",emoji:"🚀",months:[3,4,5],days:null,label:{en:"Grand Launch — Double XP!",fr:"Grand Lancement — XP ×2 !"},color:"#6c5ce7",doubleXP:true},
-  {id:"valentine",emoji:"💝",months:[2],days:[13,14,15],label:{en:"Valentine's Day 💕",fr:"Saint-Valentin 💕"},color:"#e8265c"},
-  {id:"halloween",emoji:"🎃",months:[10],days:[29,30,31],label:{en:"Spooky blind dates 🎃",fr:"Dates flippants 🎃"},color:"#ff6b3d"},
-  {id:"newyear",emoji:"🎆",months:[12,1],days:[31,1],label:{en:"New Year sparks ✨",fr:"Étincelles du Nouvel An ✨"},color:"#6c5ce7"},
-  {id:"summer",emoji:"☀️",months:[6,7,8],days:null,label:{en:"Summer vibes ☀️",fr:"Vibrations d'été ☀️"},color:"#fbbf24"},
+  {id:"launch",emoji:"🚀",months:[3,4,5],days:null,label:{en:"Grand Launch — Double XP!",fr:"Grand Lancement — XP ×2 !"},color:"#ff1f52",doubleXP:true},
+  {id:"valentine",emoji:"💝",months:[2],days:[13,14,15],label:{en:"Valentine's Day 💕",fr:"Saint-Valentin 💕"},color:"#ff1f52"},
+  {id:"halloween",emoji:"🎃",months:[10],days:[29,30,31],label:{en:"Spooky blind dates 🎃",fr:"Dates flippants 🎃"},color:"#ff5c30"},
+  {id:"newyear",emoji:"🎆",months:[12,1],days:[31,1],label:{en:"New Year sparks ✨",fr:"Étincelles du Nouvel An ✨"},color:"#ff9e00"},
+  {id:"summer",emoji:"☀️",months:[6,7,8],days:null,label:{en:"Summer vibes ☀️",fr:"Vibrations d'été ☀️"},color:"#ffbe0b"},
 ];
+const DAILY_LIMIT = 7;
 
 const TR = {
   en: {
@@ -114,6 +115,11 @@ const TR = {
     locDetect:"📍 Use my location",locDetecting:"Detecting…",locErr:"Couldn't detect city — type it manually",
     doubleXPNote:"✨ Double XP active on profile completion!",
     launchTitle:"We just launched 🚀",launchSub:"Complete your profile during launch to earn double XP",
+    dailyLimitReached:`All ${DAILY_LIMIT} blind dates used for today. Come back tomorrow 🌙`,
+    datesLeft:(n,total)=>`${n} / ${total} dates today`,
+    superLikeBtn:"⚡ Super Like",superLikeUsed:"Used today",
+    speedDatingLive:"🔥 Speed Dating — LIVE NOW",speedDatingBonus:"+2 bonus credits per chat until 10 PM!",
+    matchExpires:(h)=>`Expires in ${h}h ⏳`,matchExpired:"No reply — expired 👻",
   },
   fr: {
     tagline:"60 secondes pour une connexion",or:"ou",firstName:"Prénom",email:"Email",password:"Mot de passe",
@@ -149,11 +155,16 @@ const TR = {
     locDetect:"📍 Ma position",locDetecting:"Détection…",locErr:"Impossible de détecter — écris ta ville",
     doubleXPNote:"✨ Double XP actif sur la complétion du profil !",
     launchTitle:"On vient de lancer 🚀",launchSub:"Complète ton profil pendant le lancement pour gagner double XP",
+    dailyLimitReached:`Tes ${DAILY_LIMIT} blind dates du jour sont épuisées. À demain 🌙`,
+    datesLeft:(n,total)=>`${n} / ${total} dates aujourd'hui`,
+    superLikeBtn:"⚡ Super Like",superLikeUsed:"Utilisé aujourd'hui",
+    speedDatingLive:"🔥 Speed Dating — EN DIRECT",speedDatingBonus:"+2 crédits bonus par chat jusqu'à 22h !",
+    matchExpires:(h)=>`Expire dans ${h}h ⏳`,matchExpired:"Sans réponse — expiré 👻",
   }
 };
 
-const dark = {name:"dark",bg:"#07070f",surface:"#0e0e1a",surfAlt:"#12121e",card:"#0f0f1c",border:"#1c1c32",borderL:"#28284a",input:"#0b0b16",accent:"#e8265c",accentGlow:"rgba(232,38,92,0.28)",accentSoft:"rgba(232,38,92,0.08)",accentGrad:"linear-gradient(135deg,#e8265c,#ff6b3d)",sec:"#6c5ce7",gold:"#fbbf24",goldSoft:"rgba(251,191,36,0.1)",danger:"#ff4757",text:"#eeeef8",textS:"#8888a8",textD:"#45455e",overlay:"rgba(4,4,12,0.95)",bgGrad:"radial-gradient(ellipse at 25% 0%,#16103c 0%,#07070f 65%)",gBg:"rgba(255,255,255,0.05)",gC:"#fff",gB:"1px solid rgba(255,255,255,0.1)"};
-const light = {name:"light",bg:"#f7f5f2",surface:"#ffffff",surfAlt:"#f0ede8",card:"#ffffff",border:"#e5dfd6",borderL:"#d5cfc6",input:"#f0ede8",accent:"#e6295f",accentGlow:"rgba(230,41,95,0.18)",accentSoft:"rgba(230,41,95,0.06)",accentGrad:"linear-gradient(135deg,#e6295f,#ff6b3d)",sec:"#5b4cdb",gold:"#d97706",goldSoft:"rgba(217,119,6,0.08)",danger:"#dc2626",text:"#16162a",textS:"#65658a",textD:"#9898b0",overlay:"rgba(247,245,242,0.95)",bgGrad:"radial-gradient(ellipse at 30% 0%,#fce8ef 0%,#f7f5f2 65%)",gBg:"#fff",gC:"#222",gB:"1px solid #ddd"};
+const dark = {name:"dark",bg:"#060409",surface:"#0c0910",surfAlt:"#110e16",card:"#0c0910",border:"#1c1828",borderL:"#2a2438",input:"#08060c",accent:"#ff1f52",accentGlow:"rgba(255,31,82,0.32)",accentSoft:"rgba(255,31,82,0.08)",accentGrad:"linear-gradient(135deg,#ff1f52,#ff5c30)",sec:"#ff9e00",gold:"#ffbe0b",goldSoft:"rgba(255,190,11,0.1)",danger:"#ff3838",text:"#f0ecf7",textS:"#7a7090",textD:"#3d3655",overlay:"rgba(6,4,9,0.97)",bgGrad:"radial-gradient(ellipse at 85% 115%,#1d0814 0%,#060409 55%)",gBg:"rgba(255,255,255,0.05)",gC:"#fff",gB:"1px solid rgba(255,255,255,0.1)"};
+const light = {name:"light",bg:"#faf8f5",surface:"#ffffff",surfAlt:"#f3f0eb",card:"#ffffff",border:"#e8e0d4",borderL:"#d8d0c4",input:"#f3f0eb",accent:"#f01d4f",accentGlow:"rgba(240,29,79,0.18)",accentSoft:"rgba(240,29,79,0.06)",accentGrad:"linear-gradient(135deg,#f01d4f,#ff5a2c)",sec:"#e67600",gold:"#d97706",goldSoft:"rgba(217,119,6,0.08)",danger:"#dc2626",text:"#14102a",textS:"#62608a",textD:"#9898b0",overlay:"rgba(250,248,245,0.97)",bgGrad:"radial-gradient(ellipse at 80% 115%,#fce4ee 0%,#faf8f5 60%)",gBg:"#fff",gC:"#222",gB:"1px solid #ddd"};
 
 const TC = createContext(dark);
 function useT() { return useContext(TC); }
@@ -162,14 +173,13 @@ function useL() { return useContext(LC); }
 
 // ── UTILS ──
 
-async function upImg(f, detectFaces) {
+async function upImg(f) {
   const fd = new FormData();
   fd.append("file",f); fd.append("upload_preset",CLD.p); fd.append("folder","blinddate");
-  if (detectFaces) fd.append("faces","true");
   const r = await fetch(`https://api.cloudinary.com/v1_1/${CLD.c}/image/upload`,{method:"POST",body:fd});
   if (!r.ok) throw new Error("Upload failed");
   const json = await r.json();
-  return detectFaces ? {url:json.secure_url, faces:json.faces||[]} : json.secure_url;
+  return json.secure_url;
 }
 
 function calcCompatibility(a=[], b=[]) {
@@ -215,6 +225,11 @@ async function applyReferral(newUid, code) {
     return true;
   } catch { return false; }
 }
+
+function getTodayStr() { return new Date().toDateString(); }
+function getDailyCount(p) { if(!p?.dailyChats||p.dailyChats.date!==getTodayStr())return 0;return p.dailyChats.count||0; }
+function canSuperLike(p) { return p?.superLikeDate!==getTodayStr(); }
+function isSpeedDatingNow() { const n=new Date();return n.getDay()===5&&n.getHours()>=20&&n.getHours()<22; }
 
 // ── COMPONENTS ──
 
@@ -265,18 +280,19 @@ function XPBar({xp}) {
 function NavBar({tab,setTab,n}) {
   const T = useT();
   const {t} = useL();
-  const HomeIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-  const ChatIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
-  const UserIcon=()=><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+  const HomeIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+  const ChatIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+  const UserIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
   const items=[{id:"home",label:t.homeNav,Icon:HomeIcon},{id:"matches",label:t.matchesNav,Icon:ChatIcon},{id:"profile",label:t.profileNav,Icon:UserIcon}];
-  return <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:50,background:T.surface,borderTop:`1px solid ${T.border}`,display:"flex",justifyContent:"space-around",padding:"10px 0 16px"}}>
+  const pillBg = T.name==="dark" ? "rgba(12,9,16,0.88)" : "rgba(255,255,255,0.9)";
+  const pillBorder = T.name==="dark" ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)";
+  return <div style={{position:"fixed",bottom:18,left:"50%",transform:"translateX(-50%)",zIndex:50,background:pillBg,backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRadius:32,border:pillBorder,display:"flex",padding:6,boxShadow:T.name==="dark"?"0 8px 40px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.04)":"0 8px 40px rgba(0,0,0,0.14)"}}>
     {items.map(({id,label,Icon})=>{
       const active=tab===id;
-      return <button key={id} onClick={()=>setTab(id)} style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 24px",position:"relative",color:active?T.accent:T.textD,transition:"color .2s"}}>
-        {id==="matches"&&n>0&&<span style={{position:"absolute",top:2,right:18,width:7,height:7,borderRadius:"50%",background:T.accent,border:`2px solid ${T.surface}`}}/>}
+      return <button key={id} onClick={()=>setTab(id)} style={{background:active?T.accentGrad:"transparent",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:active?"8px 22px":"8px 16px",borderRadius:26,position:"relative",color:active?"#fff":T.textS,transition:"all .25s cubic-bezier(.34,1.56,.64,1)",boxShadow:active?`0 4px 18px ${T.accentGlow}`:"none"}}>
+        {id==="matches"&&n>0&&<span style={{position:"absolute",top:6,right:active?14:10,width:7,height:7,borderRadius:"50%",background:active?"rgba(255,255,255,0.9)":T.accent,border:`2px solid ${active?T.accent:T.surface}`}}/>}
         <Icon/>
-        <span style={{fontFamily:"'Nunito'",fontSize:10,fontWeight:700}}>{label}</span>
-        {active&&<span style={{position:"absolute",top:-1,left:"50%",transform:"translateX(-50%)",width:24,height:2.5,borderRadius:2,background:T.accentGrad}}/>}
+        <span style={{fontFamily:"'Nunito'",fontSize:10,fontWeight:800,letterSpacing:.3}}>{label}</span>
       </button>;
     })}
   </div>;
@@ -431,7 +447,7 @@ function Setup({user,onDone}) {
 
   function validate() {
     setErr("");
-    if (step===0&&(!age||age<18||!city.trim())){setErr(t.errAgeCity);return false;}
+    if (step===0&&(!age||age<18)){setErr(t.errAge||"Âge requis (18+)");return false;}
     if (step===1&&interests.length<2){setErr(t.errMinInterests);return false;}
     if (step===2&&!bio.trim()){setErr(t.errBio);return false;}
     if (step===3&&Object.keys(personality).length<5){setErr(t.errPersonality);return false;}
@@ -441,11 +457,9 @@ function Setup({user,onDone}) {
 
   async function finish() {
     if (!validate()) return;
-    setUploading(true); setFaceChecking(true);
+    setUploading(true);
     try {
-      const {url,faces} = await upImg(photoFile, true);
-      setFaceChecking(false);
-      if (faces.length===0){setErr(t.errFace);setUploading(false);return;}
+      const url = await upImg(photoFile);
       const activeEv=getActiveEvent();
       const xpGain=activeEv?.doubleXP ? XP_PERSONALITY*2 : XP_PERSONALITY;
       const data={age:parseInt(age),city:city.trim(),bio:bio.trim(),interests,personality,photos:[url],profileComplete:true,bonuses:DEF_BONUS,xp:xpGain};
@@ -508,7 +522,7 @@ function Setup({user,onDone}) {
             </div>}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(!f)return;setPhotoFile(f);const r=new FileReader();r.onload=ev=>setPreview(ev.target.result);r.readAsDataURL(f);}} style={{display:"none"}}/>
-          {faceChecking&&<p style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,textAlign:"center",marginTop:10}}>{t.faceChecking}</p>}
+          {uploading&&<p style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,textAlign:"center",marginTop:10}}>{t.faceChecking}</p>}
         </>}
       </Card>
       <div style={{display:"flex",gap:10}}>
@@ -527,15 +541,22 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
   const bonusTypes=BONUS_TYPES[lang];
   const event=getActiveEvent();
   const nextMilestone=Object.keys(STREAK_MILESTONES).map(Number).find(m=>m>streak);
+  const dailyCount=getDailyCount(profile);
+  const datesLeft=DAILY_LIMIT-dailyCount;
+  const speedDating=isSpeedDatingNow();
 
-  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90}}>
+  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:100}}>
     <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:18}}>
       {profile.photos?.[0]
-        ?<img src={profile.photos[0]} style={{width:54,height:54,borderRadius:16,objectFit:"cover",border:`2px solid ${T.accent}`}}/>
-        :<div style={{width:54,height:54,borderRadius:16,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff"}}>{profile.name?.[0]}</div>}
-      <div>
-        <div style={{fontFamily:"'Nunito'",fontSize:17,fontWeight:800,color:T.text}}>{profile.name}</div>
-        <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD}}>📍 {profile.city}</div>
+        ?<img src={profile.photos[0]} style={{width:52,height:52,borderRadius:14,objectFit:"cover",border:`2.5px solid ${T.accent}`}}/>
+        :<div style={{width:52,height:52,borderRadius:14,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",fontWeight:900}}>{profile.name?.[0]}</div>}
+      <div style={{flex:1}}>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:18,fontWeight:700,color:T.text}}>{profile.name}</div>
+        {profile.city&&<div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,marginTop:1}}>📍 {profile.city}</div>}
+      </div>
+      <div style={{textAlign:"center",padding:"6px 12px",borderRadius:12,background:datesLeft>0?T.accentSoft:T.surfAlt,border:`1px solid ${datesLeft>0?T.accent+"33":T.border}`}}>
+        <div style={{fontFamily:"'Nunito'",fontSize:18,fontWeight:900,color:datesLeft>0?T.accent:T.textD,lineHeight:1}}>{datesLeft}</div>
+        <div style={{fontFamily:"'Nunito'",fontSize:9,fontWeight:800,color:T.textS,textTransform:"uppercase",letterSpacing:.5,marginTop:2}}>left today</div>
       </div>
     </div>
 
@@ -560,10 +581,19 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
       </div>
     )}
 
+    {speedDating&&<div style={{padding:"14px 18px",borderRadius:18,marginBottom:14,background:"linear-gradient(135deg,rgba(255,31,82,0.15),rgba(255,92,48,0.08))",border:"1.5px solid rgba(255,31,82,0.4)",display:"flex",alignItems:"center",gap:12,position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:-14,right:-14,fontSize:60,opacity:.07,userSelect:"none"}}>🔥</div>
+      <span style={{fontSize:26,flexShrink:0}}>🔥</span>
+      <div>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:14,fontWeight:700,color:T.accent}}>{t.speedDatingLive}</div>
+        <div style={{fontFamily:"'Nunito'",fontSize:11,color:T.textS,marginTop:2}}>{t.speedDatingBonus}</div>
+      </div>
+    </div>}
+
     <Card style={{padding:"14px 18px",marginBottom:14}}><XPBar xp={profile.xp||0}/></Card>
 
     {streak>0&&<Card style={{padding:"13px 18px",marginBottom:14,display:"flex",alignItems:"center",gap:12}}>
-      <span style={{fontSize:26}}>🔥</span>
+      <span style={{fontSize:24}}>🔥</span>
       <div style={{flex:1}}>
         <div style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:800,color:T.text}}>{t.streakDays(streak)}</div>
         {nextMilestone&&<div style={{fontFamily:"'Nunito'",fontSize:11,color:T.textD,marginTop:2}}>{t.streakNext(nextMilestone)}</div>}
@@ -571,9 +601,9 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
       </div>
     </Card>}
 
-    <button onClick={onStart} style={{width:"100%",padding:"20px 24px",borderRadius:20,border:"none",cursor:"pointer",background:T.accentGrad,color:"#fff",fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:16,boxShadow:`0 8px 36px ${T.accentGlow}`,animation:"glow 2.5s ease-in-out infinite",position:"relative",overflow:"hidden"}}>
-      {t.startChat}
-      <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(255,255,255,.1),transparent)",pointerEvents:"none"}}/>
+    <button onClick={datesLeft>0?onStart:null} style={{width:"100%",padding:"22px 24px",borderRadius:22,border:"none",cursor:datesLeft>0?"pointer":"not-allowed",background:datesLeft>0?T.accentGrad:T.surfAlt,color:datesLeft>0?"#fff":T.textD,fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:16,boxShadow:datesLeft>0?`0 10px 40px ${T.accentGlow}`:"none",animation:datesLeft>0?"glow 2.5s ease-in-out infinite":"none",position:"relative",overflow:"hidden",opacity:datesLeft>0?1:0.6,transition:"all .3s"}}>
+      {datesLeft>0?t.startChat:"🌙 Come back tomorrow"}
+      {datesLeft>0&&<div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(255,255,255,.12),transparent)",pointerEvents:"none"}}/>}
     </button>
 
     <Card style={{padding:18,marginBottom:14}}>
@@ -657,7 +687,15 @@ function MatchesTab({myUid,matches,onBlock}) {
     </div>
   </div>;
 
-  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90}}>
+  function getMatchExpiry(m) {
+    if(!m.matchedAt||m.lastMessage)return null;
+    const expireAt=new Date(m.matchedAt).getTime()+24*60*60*1000;
+    const now=Date.now();
+    if(now>=expireAt)return "expired";
+    return Math.ceil((expireAt-now)/(60*60*1000));
+  }
+
+  return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:100}}>
     <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:22,color:T.text,margin:"0 0 18px"}}>{t.matches}</h2>
     {matches.length===0&&<div style={{textAlign:"center",padding:"60px 20px"}}>
       <div style={{width:64,height:64,borderRadius:20,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
@@ -665,19 +703,25 @@ function MatchesTab({myUid,matches,onBlock}) {
       </div>
       <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textD}}>{t.noMatches}</p>
     </div>}
-    {matches.map(m=><div key={m.matchId} onClick={()=>setOpenId(m.matchId)}
-      style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:10,borderRadius:18,background:T.card,border:`1px solid ${T.border}`,cursor:"pointer"}}
-      onMouseEnter={e=>e.currentTarget.style.transform="scale(1.01)"}
-      onMouseLeave={e=>e.currentTarget.style.transform="none"}>
-      {m.photos?.[0]
-        ?<img src={m.photos[0]} style={{width:50,height:50,borderRadius:14,objectFit:"cover",border:`2px solid ${T.accent}`}}/>
-        :<div style={{width:50,height:50,borderRadius:14,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:"#fff"}}>{m.name?.[0]}</div>}
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:700,color:T.text,marginBottom:2}}>{m.name}{m.age?`, ${m.age}`:""}</div>
-        <div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{m.lastMessage||t.newMatch}</div>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>)}
+    {matches.map(m=>{
+      const expiry=getMatchExpiry(m);
+      const isExpired=expiry==="expired";
+      return <div key={m.matchId} onClick={()=>!isExpired&&setOpenId(m.matchId)}
+        style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",marginBottom:10,borderRadius:18,background:T.card,border:`1px solid ${isExpired?T.border:typeof expiry==="number"&&expiry<=6?T.accent+"33":T.border}`,cursor:isExpired?"default":"pointer",opacity:isExpired?0.45:1,transition:"transform .15s"}}
+        onMouseEnter={e=>{if(!isExpired)e.currentTarget.style.transform="scale(1.01)";}}
+        onMouseLeave={e=>e.currentTarget.style.transform="none"}>
+        {m.photos?.[0]
+          ?<img src={m.photos[0]} style={{width:50,height:50,borderRadius:14,objectFit:"cover",border:`2px solid ${isExpired?T.border:T.accent}`,filter:isExpired?"grayscale(1)":"none"}}/>
+          :<div style={{width:50,height:50,borderRadius:14,background:isExpired?T.surfAlt:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:isExpired?T.textD:"#fff"}}>{m.name?.[0]}</div>}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontFamily:"'Nunito'",fontSize:14,fontWeight:700,color:T.text,marginBottom:2}}>{m.name}{m.age?`, ${m.age}`:""}</div>
+          <div style={{fontFamily:"'Nunito'",fontSize:12,color:isExpired?T.danger:typeof expiry==="number"?T.sec:T.textD,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+            {isExpired?t.matchExpired:typeof expiry==="number"?t.matchExpires(expiry):m.lastMessage||t.newMatch}
+          </div>
+        </div>
+        {!isExpired&&<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>}
+      </div>;
+    })}
   </div>;
 }
 
@@ -985,7 +1029,8 @@ export default function App() {
         const uSnap=await getDoc(doc(db,"users",otherId));
         const uData=uSnap.exists()?uSnap.data():{};
         if(uData.blocked?.includes(uid))continue;
-        results.push({matchId:d.id,...data,...uData,otherId});
+        const matchedAt=data.matchedAt?.toDate?.()?.toISOString()||data.createdAt?.toDate?.()?.toISOString()||null;
+        results.push({matchId:d.id,...data,...uData,otherId,matchedAt});
       }
       setMatches(results);
     });
@@ -1018,6 +1063,8 @@ export default function App() {
   }
 
   async function startChat(){
+    const count=getDailyCount(profile);
+    if(count>=DAILY_LIMIT){alert(t.dailyLimitReached);return;}
     setScreen("waiting");setCompatibility(null);
     const myUid=user.uid;let matched=false;
     let roomUnsub=()=>{};let chatUnsub=()=>{};let tmout;
@@ -1029,6 +1076,15 @@ export default function App() {
       const pSnap=await getDoc(doc(db,"users",otherId));
       setPartner(pSnap.exists()?pSnap.data():null);
       await addXP(XP_CHAT);
+      const today=getTodayStr();
+      const curCount=profile?.dailyChats?.date===today?(profile.dailyChats.count||0):0;
+      const newDailyChats={date:today,count:curCount+1};
+      await updateDoc(doc(db,"users",myUid),{dailyChats:newDailyChats});
+      setProfile(p=>({...p,dailyChats:newDailyChats}));
+      if(isSpeedDatingNow()){
+        const bonus2={city:(bonuses.city||0)+2,ice:(bonuses.ice||0)+2,peek:(bonuses.peek||0)+2,anon:(bonuses.anon||0)+2};
+        setBonuses(bonus2);await updateDoc(doc(db,"users",myUid),{bonuses:bonus2});
+      }
       setChatId(chatDocId);setOtherUid(otherId);setScreen("chat");
     }
 
@@ -1083,6 +1139,14 @@ export default function App() {
   },[partner,profile]);
 
   async function decide(decision){
+    if(decision==="superlike"){
+      // Force match both sides immediately
+      await updateDoc(doc(db,"users",user.uid),{superLikeDate:getTodayStr()});
+      setProfile(p=>({...p,superLikeDate:getTodayStr()}));
+      await updateDoc(doc(db,"blindChats",chatId),{user1Decision:"match",user2Decision:"match",superLikedBy:user.uid});
+      await resolveMatch("match","match");
+      return;
+    }
     const chatSnap=await getDoc(doc(db,"blindChats",chatId));
     const data=chatSnap.data();
     const isUser1=data.users[0]===user.uid;
@@ -1104,8 +1168,9 @@ export default function App() {
 
   async function resolveMatch(mine,theirs){
     await updateDoc(doc(db,"blindChats",chatId),{status:"ended"}).catch(()=>{});
-    if(mine==="match"&&theirs==="match"){
-      if(user.uid<otherUid)await addDoc(collection(db,"matches"),{users:[user.uid,otherUid],createdAt:serverTimestamp(),lastMessage:null});
+    const isMatch=(mine==="match"||mine==="superlike")&&(theirs==="match"||theirs==="superlike");
+    if(isMatch){
+      if(user.uid<otherUid)await addDoc(collection(db,"matches"),{users:[user.uid,otherUid],createdAt:serverTimestamp(),matchedAt:serverTimestamp(),lastMessage:null});
       await addXP(XP_MATCH);
       const snap=await getDoc(doc(db,"users",otherUid));
       setOtherProfile(snap.exists()?snap.data():{name:"?"});
@@ -1132,7 +1197,8 @@ export default function App() {
         @keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-        @keyframes glow{0%,100%{box-shadow:0 8px 36px ${T.accentGlow}}50%{box-shadow:0 8px 56px ${T.accentGlow},0 0 80px ${T.accentGlow}}}
+        @keyframes glow{0%,100%{box-shadow:0 10px 40px ${T.accentGlow}}50%{box-shadow:0 14px 60px ${T.accentGlow},0 0 100px ${T.accentGlow}}}
+        @keyframes shimmer{0%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.008)}100%{opacity:.6;transform:scale(1)}}
         input::placeholder,textarea::placeholder{color:${T.textD}}
         button:focus-visible{outline:2px solid ${T.accent};outline-offset:2px}
       `}</style>
@@ -1163,10 +1229,13 @@ export default function App() {
         <p style={{fontFamily:"'Nunito'",fontSize:14,color:T.textS,marginBottom:16}}>{t.revealQ}</p>
         {compatibility!==null&&<div style={{padding:"8px 22px",borderRadius:20,background:T.accentSoft,border:`1px solid ${T.accent}33`,fontFamily:"'Nunito'",fontSize:13,fontWeight:800,color:T.accent,marginBottom:28}}>{t.compatScore(compatibility)}</div>}
         {compatibility===null&&<div style={{marginBottom:28}}/>}
-        <div style={{display:"flex",gap:14}}>
+        <div style={{display:"flex",gap:14,marginBottom:16}}>
           <Btn onClick={()=>decide("match")} style={{padding:"15px 32px",fontSize:15}}>{t.matchBtn}</Btn>
           <Btn variant="ghost" onClick={()=>decide("pass")} style={{padding:"15px 32px",fontSize:15}}>{t.passBtn}</Btn>
         </div>
+        {canSuperLike(profile)
+          ?<button onClick={()=>decide("superlike")} style={{background:`linear-gradient(135deg,#ff9e00,#ffbe0b)`,border:"none",borderRadius:16,padding:"12px 28px",fontFamily:"'Nunito'",fontSize:14,fontWeight:800,color:"#000",cursor:"pointer",boxShadow:"0 6px 24px rgba(255,190,11,0.4)",letterSpacing:.3}}>⚡ {t.superLikeBtn} — Match garanti</button>
+          :<div style={{fontFamily:"'Nunito'",fontSize:12,color:T.textD}}>{t.superLikeUsed}</div>}
       </div>}
 
       {screen==="waitDec"&&<div style={center}>
