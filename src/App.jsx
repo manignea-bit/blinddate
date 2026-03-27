@@ -265,7 +265,7 @@ function Btn({children,variant="primary",disabled,onClick,style:sx,full}) {
   };
   const v=vs[variant]||vs.primary;
   return <button disabled={disabled} onClick={onClick} onMouseEnter={()=>sH(true)} onMouseLeave={()=>sH(false)}
-    style={{padding:"13px 26px",fontSize:14,fontWeight:700,fontFamily:"'Plus Jakarta Sans',sans-serif",borderRadius:14,cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.5:1,background:v.bg,color:v.c,border:v.b,boxShadow:v.s,width:full?"100%":"auto",transition:"all .2s ease",transform:h&&!disabled?"translateY(-1px)":"none",...sx}}>{children}</button>;
+    style={{padding:"13px 26px",fontSize:14,fontWeight:700,fontFamily:"'DM Sans',sans-serif",borderRadius:14,cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.5:1,background:v.bg,color:v.c,border:v.b,boxShadow:v.s,width:full?"100%":"auto",transition:"all .2s ease",transform:h&&!disabled?"translateY(-1px)":"none",...sx}}>{children}</button>;
 }
 
 function Card({children,style:sx}) {
@@ -275,7 +275,7 @@ function Card({children,style:sx}) {
 
 function Label({children,style:sx}) {
   const T = useT();
-  return <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.3,marginBottom:10,...sx}}>{children}</div>;
+  return <div style={{fontFamily:"'DM Sans'",fontSize:11,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.3,marginBottom:10,...sx}}>{children}</div>;
 }
 
 function XPBar({xp}) {
@@ -285,11 +285,11 @@ function XPBar({xp}) {
   const l=levels.find(x=>(xp||0)<x.nx)||levels[4];
   const pct=Math.min(((xp||0)/l.nx)*100,100);
   return <div style={{display:"flex",alignItems:"center",gap:12}}>
-    <div style={{width:32,height:32,borderRadius:10,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff",fontFamily:"'Plus Jakarta Sans'",flexShrink:0}}>{l.lv}</div>
+    <div style={{width:32,height:32,borderRadius:10,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:900,color:"#fff",fontFamily:"'DM Sans'",flexShrink:0}}>{l.lv}</div>
     <div style={{flex:1}}>
       <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,fontWeight:700,color:T.text}}>{l.n}</span>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,color:T.textD}}>{xp||0} / {l.nx} XP</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:12,fontWeight:700,color:T.text}}>{l.n}</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:11,color:T.textD}}>{xp||0} / {l.nx} XP</span>
       </div>
       <div style={{height:5,borderRadius:3,background:T.border,overflow:"hidden"}}>
         <div style={{width:`${pct}%`,height:"100%",background:T.accentGrad,borderRadius:3,transition:"width .6s ease"}}/>
@@ -313,7 +313,7 @@ function NavBar({tab,setTab,n}) {
       return <button key={id} onClick={()=>setTab(id)} style={{background:active?T.accentGrad:"transparent",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:active?"8px 22px":"8px 16px",borderRadius:26,position:"relative",color:active?"#fff":T.textS,transition:"all .25s cubic-bezier(.34,1.56,.64,1)",boxShadow:active?`0 4px 18px ${T.accentGlow}`:"none"}}>
         {id==="matches"&&n>0&&<span style={{position:"absolute",top:6,right:active?14:10,width:7,height:7,borderRadius:"50%",background:active?"rgba(255,255,255,0.9)":T.accent,border:`2px solid ${active?T.accent:T.surface}`}}/>}
         <Icon/>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:10,fontWeight:800,letterSpacing:.3}}>{label}</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:10,fontWeight:800,letterSpacing:.3}}>{label}</span>
       </button>;
     })}
   </div>;
@@ -328,8 +328,8 @@ function PhotoSlot({url,onUp,onRm,idx}) {
     {url?<>
       <img src={url} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
       {h&&<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.5)",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-        <button onClick={e=>{e.stopPropagation();ref.current?.click()}} style={{padding:"5px 10px",borderRadius:8,background:T.accentGrad,border:"none",color:"#fff",fontSize:11,fontFamily:"'Plus Jakarta Sans'",fontWeight:700,cursor:"pointer"}}>📷</button>
-        <button onClick={e=>{e.stopPropagation();onRm(idx)}} style={{padding:"5px 10px",borderRadius:8,background:"rgba(255,71,87,.4)",border:"none",color:"#fff",fontSize:11,fontFamily:"'Plus Jakarta Sans'",fontWeight:700,cursor:"pointer"}}>✕</button>
+        <button onClick={e=>{e.stopPropagation();ref.current?.click()}} style={{padding:"5px 10px",borderRadius:8,background:T.accentGrad,border:"none",color:"#fff",fontSize:11,fontFamily:"'DM Sans'",fontWeight:700,cursor:"pointer"}}>📷</button>
+        <button onClick={e=>{e.stopPropagation();onRm(idx)}} style={{padding:"5px 10px",borderRadius:8,background:"rgba(255,71,87,.4)",border:"none",color:"#fff",fontSize:11,fontFamily:"'DM Sans'",fontWeight:700,cursor:"pointer"}}>✕</button>
       </div>}
     </>:<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%"}}>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -342,9 +342,9 @@ function ReportModal({title,reasons,cancel,onReport,onClose}) {
   const T=useT();
   return <div style={{position:"fixed",inset:0,zIndex:1000,background:T.overlay,backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <Card style={{padding:24,maxWidth:360,width:"100%",animation:"scaleIn .2s ease"}}>
-      <h3 style={{fontFamily:"'Plus Jakarta Sans'",fontSize:16,fontWeight:800,color:T.text,marginBottom:16}}>🚩 {title}</h3>
-      {reasons.map(r=><button key={r} onClick={()=>onReport(r)} style={{display:"block",width:"100%",padding:"11px 14px",marginBottom:8,borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textS,fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left"}}>{r}</button>)}
-      <button onClick={onClose} style={{marginTop:4,width:"100%",padding:"11px 14px",borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textD,fontFamily:"'Plus Jakarta Sans'",fontSize:13,cursor:"pointer"}}>{cancel}</button>
+      <h3 style={{fontFamily:"'DM Sans'",fontSize:16,fontWeight:800,color:T.text,marginBottom:16}}>🚩 {title}</h3>
+      {reasons.map(r=><button key={r} onClick={()=>onReport(r)} style={{display:"block",width:"100%",padding:"11px 14px",marginBottom:8,borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textS,fontFamily:"'DM Sans'",fontSize:13,fontWeight:600,cursor:"pointer",textAlign:"left"}}>{r}</button>)}
+      <button onClick={onClose} style={{marginTop:4,width:"100%",padding:"11px 14px",borderRadius:12,border:`1px solid ${T.border}`,background:"transparent",color:T.textD,fontFamily:"'DM Sans'",fontSize:13,cursor:"pointer"}}>{cancel}</button>
     </Card>
   </div>;
 }
@@ -399,23 +399,23 @@ function AuthScreen() {
     setLd(false);
   }
 
-  const inp={width:"100%",padding:"14px 18px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Plus Jakarta Sans'",outline:"none",marginBottom:12};
+  const inp={width:"100%",padding:"14px 18px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'DM Sans'",outline:"none",marginBottom:12};
   return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
     <div style={{width:"100%",maxWidth:380,animation:"fadeIn .5s"}}>
       <div style={{textAlign:"center",marginBottom:44}}>
         <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:64,height:64,borderRadius:22,background:T.accentGrad,marginBottom:18,boxShadow:`0 10px 40px ${T.accentGlow}`}}>
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
         </div>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:36,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 8px",letterSpacing:"-0.5px"}}><em>Blind</em>Date</h1>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textD,letterSpacing:0.3}}>{t.tagline}</p>
+        <h1 style={{fontFamily:"'Fraunces',serif",fontSize:36,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 8px",letterSpacing:"-0.5px"}}><em>Blind</em>Date</h1>
+        <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textD,letterSpacing:0.3}}>{t.tagline}</p>
       </div>
-      {err&&<div style={{padding:"12px 16px",borderRadius:12,background:`${T.danger}10`,border:`1px solid ${T.danger}25`,color:T.danger,fontSize:13,fontFamily:"'Plus Jakarta Sans'",marginBottom:16,textAlign:"center"}}>{err}</div>}
+      {err&&<div style={{padding:"12px 16px",borderRadius:12,background:`${T.danger}10`,border:`1px solid ${T.danger}25`,color:T.danger,fontSize:13,fontFamily:"'DM Sans'",marginBottom:16,textAlign:"center"}}>{err}</div>}
       <Btn variant="google" full onClick={handleGoogle} disabled={ld} style={{marginBottom:14,display:"flex",alignItems:"center",justifyContent:"center",gap:10}}>
         <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         Google
       </Btn>
       <div style={{display:"flex",alignItems:"center",gap:12,margin:"16px 0"}}>
-        <div style={{flex:1,height:1,background:T.border}}/><span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textD}}>{t.or}</span><div style={{flex:1,height:1,background:T.border}}/>
+        <div style={{flex:1,height:1,background:T.border}}/><span style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textD}}>{t.or}</span><div style={{flex:1,height:1,background:T.border}}/>
       </div>
       <Card style={{padding:20,marginBottom:16}}>
         {mode==="signup"&&<input value={name} onChange={e=>setName(e.target.value)} placeholder={t.firstName} style={inp}/>}
@@ -423,7 +423,7 @@ function AuthScreen() {
         <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder={t.password} onKeyDown={e=>e.key==="Enter"&&handleSubmit()} style={{...inp,marginBottom:0}}/>
       </Card>
       <Btn full onClick={handleSubmit} disabled={ld}>{ld?"…":mode==="login"?t.login:t.signupBtn}</Btn>
-      <p style={{textAlign:"center",marginTop:20,fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textS}}>
+      <p style={{textAlign:"center",marginTop:20,fontFamily:"'DM Sans'",fontSize:13,color:T.textS}}>
         {mode==="login"?t.noAccount:t.hasAccount}
         <span onClick={()=>{setMode(mode==="login"?"signup":"login");setErr("");}} style={{color:T.accent,fontWeight:700,cursor:"pointer"}}>{mode==="login"?t.register:t.signIn}</span>
       </p>
@@ -493,26 +493,26 @@ function Setup({user,onDone}) {
   }
 
   function next(){if(validate()){step===5?finish():setStep(s=>s+1);}}
-  const inp={width:"100%",padding:"13px 16px",borderRadius:13,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Plus Jakarta Sans'",outline:"none"};
+  const inp={width:"100%",padding:"13px 16px",borderRadius:13,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'DM Sans'",outline:"none"};
 
   return <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",padding:"24px 20px 48px"}}>
     <div style={{width:"100%",maxWidth:420}}>
       <div style={{textAlign:"center",marginBottom:24,paddingTop:16}}>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 18px"}}>{t.profileStep(step+1,TOTAL)}</h1>
+        <h1 style={{fontFamily:"'Fraunces',serif",fontSize:22,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 18px"}}>{t.profileStep(step+1,TOTAL)}</h1>
         <div style={{display:"flex",gap:6,justifyContent:"center"}}>
           {Array.from({length:TOTAL},(_,i)=><div key={i} style={{height:6,borderRadius:3,background:i<=step?T.accentGrad:T.border,transition:"all .4s ease",width:i===step?28:i<step?16:8}}/>)}
         </div>
       </div>
-      {err&&<div style={{padding:10,borderRadius:12,background:`${T.danger}10`,color:T.danger,fontSize:13,fontFamily:"'Plus Jakarta Sans'",marginBottom:14,textAlign:"center"}}>{err}</div>}
+      {err&&<div style={{padding:10,borderRadius:12,background:`${T.danger}10`,color:T.danger,fontSize:13,fontFamily:"'DM Sans'",marginBottom:14,textAlign:"center"}}>{err}</div>}
       <Card style={{padding:22,marginBottom:18}}>
         {step===0&&<>
           <Label>{t.genderLabel}</Label>
           <div style={{display:"flex",gap:8,marginBottom:20}}>
-            {[["homme",t.man],["femme",t.woman],["nonbinaire",t.nonbinary]].map(([g,lab])=>{const a=gender===g;return<button key={g} onClick={()=>setGender(g)} style={{flex:1,padding:"12px 6px",borderRadius:14,fontSize:13,fontFamily:"'Plus Jakarta Sans'",fontWeight:700,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{lab}</button>;})}
+            {[["homme",t.man],["femme",t.woman],["nonbinaire",t.nonbinary]].map(([g,lab])=>{const a=gender===g;return<button key={g} onClick={()=>setGender(g)} style={{flex:1,padding:"12px 6px",borderRadius:14,fontSize:13,fontFamily:"'DM Sans'",fontWeight:700,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{lab}</button>;})}
           </div>
           <Label>{t.orientationLabel}</Label>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {[["hetero",t.hetero],["gay",t.gay],["bi",t.bi],["lesb",t.lesb]].map(([o,lab])=>{const a=orientation===o;return<button key={o} onClick={()=>setOrientation(o)} style={{padding:"12px 8px",borderRadius:14,fontSize:13,fontFamily:"'Plus Jakarta Sans'",fontWeight:700,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{lab}</button>;})}
+            {[["hetero",t.hetero],["gay",t.gay],["bi",t.bi],["lesb",t.lesb]].map(([o,lab])=>{const a=orientation===o;return<button key={o} onClick={()=>setOrientation(o)} style={{padding:"12px 8px",borderRadius:14,fontSize:13,fontFamily:"'DM Sans'",fontWeight:700,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{lab}</button>;})}
           </div>
         </>}
         {step===1&&<>
@@ -520,28 +520,28 @@ function Setup({user,onDone}) {
           <input type="number" min={18} value={age} onChange={e=>setAge(e.target.value)} style={{...inp,width:100,marginBottom:18}}/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
             <Label style={{marginBottom:0}}>{t.city}</Label>
-            <button onClick={detectCity} disabled={locating} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 10px",fontFamily:"'Plus Jakarta Sans'",fontSize:11,fontWeight:700,color:T.textS,cursor:"pointer",opacity:locating?0.6:1}}>{locating?t.locDetecting:t.locDetect}</button>
+            <button onClick={detectCity} disabled={locating} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 10px",fontFamily:"'DM Sans'",fontSize:11,fontWeight:700,color:T.textS,cursor:"pointer",opacity:locating?0.6:1}}>{locating?t.locDetecting:t.locDetect}</button>
           </div>
           <input value={city} onChange={e=>setCity(e.target.value)} placeholder="Paris..." style={inp}/>
         </>}
         {step===2&&<>
           <Label>{t.interests(interests.length)}</Label>
           <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-            {ints.map(tag=>{const a=interests.includes(tag);return<button key={tag} onClick={()=>setInterests(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"7px 16px",borderRadius:20,fontSize:13,fontFamily:"'Plus Jakarta Sans'",fontWeight:600,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{tag}</button>;})}
+            {ints.map(tag=>{const a=interests.includes(tag);return<button key={tag} onClick={()=>setInterests(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"7px 16px",borderRadius:20,fontSize:13,fontFamily:"'DM Sans'",fontWeight:600,cursor:"pointer",border:`1.5px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS,transition:"all .15s"}}>{tag}</button>;})}
           </div>
         </>}
         {step===3&&<>
           <Label>{t.bio}</Label>
           <textarea value={bio} onChange={e=>setBio(e.target.value.slice(0,150))} rows={4} style={{...inp,resize:"none",lineHeight:1.7,width:"100%"}}/>
-          <div style={{textAlign:"right",marginTop:5,fontFamily:"'Plus Jakarta Sans'",fontSize:11,color:T.textD}}>{bio.length}/150</div>
+          <div style={{textAlign:"right",marginTop:5,fontFamily:"'DM Sans'",fontSize:11,color:T.textD}}>{bio.length}/150</div>
         </>}
         {step===4&&<>
           <Label>{t.personalityStep}</Label>
           {pqs.map((item,qi)=><div key={qi} style={{marginBottom:16}}>
-            <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textS,marginBottom:8,lineHeight:1.5}}>{qi+1}. {item.q}</p>
+            <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textS,marginBottom:8,lineHeight:1.5}}>{qi+1}. {item.q}</p>
             <div style={{display:"flex",gap:8}}>
               {item.a.map((label,ai)=>{const sel=personality[qi]===ai;return<button key={ai} onClick={()=>setPersonality(p=>({...p,[qi]:ai}))}
-                style={{flex:1,padding:"10px 8px",borderRadius:12,fontSize:12,fontFamily:"'Plus Jakarta Sans'",fontWeight:700,cursor:"pointer",border:`1.5px solid ${sel?T.accent:T.border}`,background:sel?T.accentSoft:"transparent",color:sel?T.accent:T.textS,transition:"all .15s"}}>{label}</button>;})}
+                style={{flex:1,padding:"10px 8px",borderRadius:12,fontSize:12,fontFamily:"'DM Sans'",fontWeight:700,cursor:"pointer",border:`1.5px solid ${sel?T.accent:T.border}`,background:sel?T.accentSoft:"transparent",color:sel?T.accent:T.textS,transition:"all .15s"}}>{label}</button>;})}
             </div>
           </div>)}
         </>}
@@ -552,11 +552,11 @@ function Setup({user,onDone}) {
               <div style={{width:56,height:56,borderRadius:16,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </div>
-              <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textS}}>{t.clickToChoose}</p>
+              <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textS}}>{t.clickToChoose}</p>
             </div>}
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(!f)return;setPhotoFile(f);const r=new FileReader();r.onload=ev=>setPreview(ev.target.result);r.readAsDataURL(f);}} style={{display:"none"}}/>
-          {uploading&&<p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textD,textAlign:"center",marginTop:10}}>{t.faceChecking}</p>}
+          {uploading&&<p style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textD,textAlign:"center",marginTop:10}}>{t.faceChecking}</p>}
         </>}
       </Card>
       <div style={{display:"flex",gap:10}}>
@@ -585,8 +585,8 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
         ?<img src={profile.photos[0]} style={{width:52,height:52,borderRadius:14,objectFit:"cover",border:`2.5px solid ${T.accent}`}}/>
         :<div style={{width:52,height:52,borderRadius:14,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,color:"#fff",fontWeight:900}}>{profile.name?.[0]}</div>}
       <div style={{flex:1}}>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:700,color:T.text}}>{profile.name}</div>
-        {profile.city&&<div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textD,marginTop:1}}>📍 {profile.city}</div>}
+        <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:T.text}}>{profile.name}</div>
+        {profile.city&&<div style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textD,marginTop:1}}>📍 {profile.city}</div>}
       </div>
     </div>
 
@@ -596,18 +596,18 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
           <span style={{fontSize:28}}>🚀</span>
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,fontWeight:700,color:event.color}}>{t.launchTitle}</div>
-            <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textS,marginTop:1}}>{t.launchSub}</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,color:event.color}}>{t.launchTitle}</div>
+            <div style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textS,marginTop:1}}>{t.launchSub}</div>
           </div>
         </div>
         <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:20,background:`${event.color}18`,border:`1px solid ${event.color}40`}}>
           <span style={{fontSize:13}}>✨</span>
-          <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,fontWeight:800,color:event.color}}>{t.doubleXPNote}</span>
+          <span style={{fontFamily:"'DM Sans'",fontSize:11,fontWeight:800,color:event.color}}>{t.doubleXPNote}</span>
         </div>
       </div>
       :<div style={{padding:"12px 18px",borderRadius:16,marginBottom:14,background:`${event.color}15`,border:`1.5px solid ${event.color}40`,display:"flex",alignItems:"center",gap:10}}>
         <span style={{fontSize:22}}>{event.emoji}</span>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:700,color:event.color}}>{event.label[lang]}</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:13,fontWeight:700,color:event.color}}>{event.label[lang]}</span>
       </div>
     )}
 
@@ -615,8 +615,8 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
       <div style={{position:"absolute",top:-14,right:-14,fontSize:60,opacity:.07,userSelect:"none"}}>🔥</div>
       <span style={{fontSize:26,flexShrink:0}}>🔥</span>
       <div>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:14,fontWeight:700,color:T.accent}}>{t.speedDatingLive}</div>
-        <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,color:T.textS,marginTop:2}}>{t.speedDatingBonus}</div>
+        <div style={{fontFamily:"'Fraunces',serif",fontSize:14,fontWeight:700,color:T.accent}}>{t.speedDatingLive}</div>
+        <div style={{fontFamily:"'DM Sans'",fontSize:11,color:T.textS,marginTop:2}}>{t.speedDatingBonus}</div>
       </div>
     </div>}
 
@@ -625,17 +625,17 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
     {streak>0&&<Card style={{padding:"13px 18px",marginBottom:14,display:"flex",alignItems:"center",gap:12}}>
       <span style={{fontSize:24}}>🔥</span>
       <div style={{flex:1}}>
-        <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:800,color:T.text}}>{t.streakDays(streak)}</div>
-        {nextMilestone&&<div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,color:T.textD,marginTop:2}}>{t.streakNext(nextMilestone)}</div>}
-        {STREAK_MILESTONES[streak]&&<div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,color:T.gold,marginTop:2}}>{t.streakReward(STREAK_MILESTONES[streak])}</div>}
+        <div style={{fontFamily:"'DM Sans'",fontSize:14,fontWeight:800,color:T.text}}>{t.streakDays(streak)}</div>
+        {nextMilestone&&<div style={{fontFamily:"'DM Sans'",fontSize:11,color:T.textD,marginTop:2}}>{t.streakNext(nextMilestone)}</div>}
+        {STREAK_MILESTONES[streak]&&<div style={{fontFamily:"'DM Sans'",fontSize:11,color:T.gold,marginTop:2}}>{t.streakReward(STREAK_MILESTONES[streak])}</div>}
       </div>
     </Card>}
 
-    <button onClick={datesLeft>0?onStart:null} style={{width:"100%",padding:"22px 24px",borderRadius:22,border:"none",cursor:datesLeft>0?"pointer":"not-allowed",background:datesLeft>0?T.accentGrad:T.surfAlt,color:datesLeft>0?"#fff":T.textD,fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:8,boxShadow:datesLeft>0?`0 10px 40px ${T.accentGlow}`:"none",animation:datesLeft>0?"glow 2.5s ease-in-out infinite":"none",position:"relative",overflow:"hidden",opacity:datesLeft>0?1:0.6,transition:"all .3s"}}>
+    <button onClick={datesLeft>0?onStart:null} style={{width:"100%",padding:"22px 24px",borderRadius:22,border:"none",cursor:datesLeft>0?"pointer":"not-allowed",background:datesLeft>0?T.accentGrad:T.surfAlt,color:datesLeft>0?"#fff":T.textD,fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.3px",marginBottom:8,boxShadow:datesLeft>0?`0 10px 40px ${T.accentGlow}`:"none",animation:datesLeft>0?"glow 2.5s ease-in-out infinite":"none",position:"relative",overflow:"hidden",opacity:datesLeft>0?1:0.6,transition:"all .3s"}}>
       {datesLeft>0?t.startChat:"🌙 Come back tomorrow"}
       {datesLeft>0&&<div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,rgba(255,255,255,.12),transparent)",pointerEvents:"none"}}/>}
     </button>
-    <div style={{textAlign:"center",marginBottom:16,fontFamily:"'Plus Jakarta Sans'",fontSize:11,color:T.textD,fontWeight:600}}>
+    <div style={{textAlign:"center",marginBottom:16,fontFamily:"'DM Sans'",fontSize:11,color:T.textD,fontWeight:600}}>
       {datesLeft>0?`${datesLeft} / ${DAILY_LIMIT} blind dates remaining today`:"No more dates today — see you tomorrow 🌙"}
     </div>
 
@@ -645,8 +645,8 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
         {bonusTypes.map(b=><div key={b.id} style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:14,background:T.surfAlt,border:`1px solid ${T.border}`}}>
           <span style={{fontSize:18}}>{b.icon}</span>
           <div>
-            <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,fontWeight:700,color:T.textS}}>{b.name}</div>
-            <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:18,fontWeight:900,color:(bonuses?.[b.id]||0)>0?T.gold:T.textD}}>{bonuses?.[b.id]||0}</div>
+            <div style={{fontFamily:"'DM Sans'",fontSize:11,fontWeight:700,color:T.textS}}>{b.name}</div>
+            <div style={{fontFamily:"'DM Sans'",fontSize:18,fontWeight:900,color:(bonuses?.[b.id]||0)>0?T.gold:T.textD}}>{bonuses?.[b.id]||0}</div>
           </div>
         </div>)}
       </div>
@@ -654,8 +654,8 @@ function HomeTab({profile,onStart,bonuses,streak,referralCode,onCopyReferral,ref
 
     <Card style={{padding:18}}>
       <Label>🔗 {t.referralTitle}</Label>
-      <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textS,marginBottom:12,lineHeight:1.5}}>{t.referralDesc}</p>
-      <div style={{padding:"10px 14px",borderRadius:12,background:T.surfAlt,border:`1px solid ${T.border}`,fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:900,color:T.text,letterSpacing:2,textAlign:"center",marginBottom:10}}>{referralCode}</div>
+      <p style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textS,marginBottom:12,lineHeight:1.5}}>{t.referralDesc}</p>
+      <div style={{padding:"10px 14px",borderRadius:12,background:T.surfAlt,border:`1px solid ${T.border}`,fontFamily:"'DM Sans'",fontSize:14,fontWeight:900,color:T.text,letterSpacing:2,textAlign:"center",marginBottom:10}}>{referralCode}</div>
       <Btn full onClick={onCopyReferral} variant="ghost">{referralCopied?t.referralCopied:t.referralCopy}</Btn>
     </Card>
   </div>;
@@ -675,7 +675,7 @@ function FullProfile({profile,onClose,superLikeContext}) {
       <button onClick={onClose} style={{background:"none",border:"none",color:T.textS,cursor:"pointer",padding:4,display:"flex"}}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:700,color:T.text}}>{profile.name}</span>
+      <span style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,color:T.text}}>{profile.name}</span>
     </div>
 
     {photos.length>0&&<div style={{position:"relative",background:"#000"}}>
@@ -692,27 +692,27 @@ function FullProfile({profile,onClose,superLikeContext}) {
     <div style={{padding:"20px 20px 40px"}}>
       {superLikeContext==="received"&&<div style={{padding:"10px 16px",borderRadius:14,background:"linear-gradient(135deg,rgba(255,190,11,0.14),rgba(255,92,48,0.08))",border:"1px solid rgba(255,190,11,0.4)",marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:18}}>⚡</span>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:800,color:"#ffbe0b"}}>Tu as reçu un Super Like !</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:13,fontWeight:800,color:"#ffbe0b"}}>Tu as reçu un Super Like !</span>
       </div>}
       {superLikeContext==="sent"&&<div style={{padding:"10px 16px",borderRadius:14,background:"rgba(255,190,11,0.08)",border:"1px solid rgba(255,190,11,0.3)",marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:18}}>⚡</span>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:800,color:"#ffbe0b"}}>Tu as Super Liké cette personne</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:13,fontWeight:800,color:"#ffbe0b"}}>Tu as Super Liké cette personne</span>
       </div>}
 
       <div style={{marginBottom:18}}>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:700,color:T.text,margin:"0 0 4px"}}>{profile.name}{profile.age?`, ${profile.age}`:""}</h2>
-        {profile.city&&<div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textD}}>📍 {profile.city}</div>}
+        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:700,color:T.text,margin:"0 0 4px"}}>{profile.name}{profile.age?`, ${profile.age}`:""}</h2>
+        {profile.city&&<div style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textD}}>📍 {profile.city}</div>}
       </div>
 
       {profile.bio&&<div style={{marginBottom:20,padding:"14px 16px",borderRadius:16,background:T.surfAlt,border:`1px solid ${T.border}`}}>
-        <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:10,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.4,marginBottom:8}}>Bio</div>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,color:T.text,lineHeight:1.7,margin:0}}>{profile.bio}</p>
+        <div style={{fontFamily:"'DM Sans'",fontSize:10,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.4,marginBottom:8}}>Bio</div>
+        <p style={{fontFamily:"'DM Sans'",fontSize:14,color:T.text,lineHeight:1.7,margin:0}}>{profile.bio}</p>
       </div>}
 
       {ints.length>0&&<div style={{marginBottom:20}}>
-        <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:10,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.4,marginBottom:10}}>Intérêts</div>
+        <div style={{fontFamily:"'DM Sans'",fontSize:10,fontWeight:800,color:T.textD,textTransform:"uppercase",letterSpacing:1.4,marginBottom:10}}>Intérêts</div>
         <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-          {ints.map(i=><span key={i} style={{padding:"6px 14px",borderRadius:20,background:T.accentSoft,border:`1px solid ${T.accent}30`,fontFamily:"'Plus Jakarta Sans'",fontSize:12,fontWeight:700,color:T.accent}}>{i}</span>)}
+          {ints.map(i=><span key={i} style={{padding:"6px 14px",borderRadius:20,background:T.accentSoft,border:`1px solid ${T.accent}30`,fontFamily:"'DM Sans'",fontSize:12,fontWeight:700,color:T.accent}}>{i}</span>)}
         </div>
       </div>}
     </div>
@@ -763,17 +763,17 @@ function MatchesTab({myUid,matches,onBlock}) {
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       {current.photos?.[0]&&<img src={current.photos[0]} style={{width:36,height:36,borderRadius:10,objectFit:"cover",border:`2px solid ${T.accent}`}}/>}
-      <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:15,fontWeight:700,color:T.text,flex:1}}>{current.name}</span>
+      <span style={{fontFamily:"'DM Sans'",fontSize:15,fontWeight:700,color:T.text,flex:1}}>{current.name}</span>
       <button onClick={()=>setShowReport(true)} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",color:T.textD}}>🚩</button>
     </div>
     <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:16}}>
-      {msgs.length===0&&<div style={{textAlign:"center",padding:48,fontFamily:"'Plus Jakarta Sans'",color:T.textD,fontSize:14}}>{t.sendFirst}</div>}
+      {msgs.length===0&&<div style={{textAlign:"center",padding:48,fontFamily:"'DM Sans'",color:T.textD,fontSize:14}}>{t.sendFirst}</div>}
       {msgs.map(m=>{const mine=m.senderId===myUid;return<div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
-        <div style={{maxWidth:"72%",padding:"10px 15px",borderRadius:18,borderBottomRightRadius:mine?4:18,borderBottomLeftRadius:mine?18:4,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'Plus Jakarta Sans'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
+        <div style={{maxWidth:"72%",padding:"10px 15px",borderRadius:18,borderBottomRightRadius:mine?4:18,borderBottomLeftRadius:mine?18:4,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'DM Sans'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
       </div>;})}
     </div>
     <div style={{padding:"10px 12px",borderTop:`1px solid ${T.border}`,background:T.surface,display:"flex",gap:8,flexShrink:0}}>
-      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();send();}}} placeholder={t.typeMessage} autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Plus Jakarta Sans'",outline:"none"}}/>
+      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();send();}}} placeholder={t.typeMessage} autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'DM Sans'",outline:"none"}}/>
       <button onClick={send} style={{width:44,height:44,borderRadius:12,border:"none",background:text.trim()?T.accentGrad:T.border,color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>↑</button>
     </div>
   </div>;
@@ -787,12 +787,12 @@ function MatchesTab({myUid,matches,onBlock}) {
   }
 
   return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:100}}>
-    <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:T.text,margin:"0 0 18px"}}>{t.matches}</h2>
+    <h2 style={{fontFamily:"'Fraunces',serif",fontSize:22,color:T.text,margin:"0 0 18px"}}>{t.matches}</h2>
     {matches.length===0&&<div style={{textAlign:"center",padding:"60px 20px"}}>
       <div style={{width:64,height:64,borderRadius:20,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={T.textD} strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,color:T.textD}}>{t.noMatches}</p>
+      <p style={{fontFamily:"'DM Sans'",fontSize:14,color:T.textD}}>{t.noMatches}</p>
     </div>}
     {matches.map(m=>{
       const expiry=getMatchExpiry(m);
@@ -805,8 +805,8 @@ function MatchesTab({myUid,matches,onBlock}) {
           ?<img src={m.photos[0]} style={{width:50,height:50,borderRadius:14,objectFit:"cover",border:`2px solid ${isExpired?T.border:T.accent}`,filter:isExpired?"grayscale(1)":"none"}}/>
           :<div style={{width:50,height:50,borderRadius:14,background:isExpired?T.surfAlt:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:isExpired?T.textD:"#fff"}}>{m.name?.[0]}</div>}
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:700,color:T.text,marginBottom:2}}>{m.name}{m.age?`, ${m.age}`:""}</div>
-          <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:isExpired?T.danger:typeof expiry==="number"?T.sec:T.textD,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+          <div style={{fontFamily:"'DM Sans'",fontSize:14,fontWeight:700,color:T.text,marginBottom:2}}>{m.name}{m.age?`, ${m.age}`:""}</div>
+          <div style={{fontFamily:"'DM Sans'",fontSize:12,color:isExpired?T.danger:typeof expiry==="number"?T.sec:T.textD,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
             {isExpired?t.matchExpired:typeof expiry==="number"?t.matchExpires(expiry):m.lastMessage||t.newMatch}
           </div>
         </div>
@@ -858,8 +858,8 @@ function ProfileTab({user,profile,setProfile,onLogout,lang,setLang,thm,setTheme}
     setSaving(false);
   }
 
-  const inp={width:"100%",padding:"11px 14px",borderRadius:12,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Plus Jakarta Sans'",outline:"none",marginBottom:10};
-  const pill=(active)=>({padding:"6px 18px",borderRadius:10,border:"none",background:active?T.accentGrad:"transparent",color:active?"#fff":T.textS,fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:700,cursor:"pointer",transition:"all .2s"});
+  const inp={width:"100%",padding:"11px 14px",borderRadius:12,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'DM Sans'",outline:"none",marginBottom:10};
+  const pill=(active)=>({padding:"6px 18px",borderRadius:10,border:"none",background:active?T.accentGrad:"transparent",color:active?"#fff":T.textS,fontFamily:"'DM Sans'",fontSize:13,fontWeight:700,cursor:"pointer",transition:"all .2s"});
 
   return <div style={{padding:20,maxWidth:440,margin:"0 auto",paddingBottom:90}}>
     <Card style={{padding:"14px 18px",marginBottom:14}}><XPBar xp={profile.xp||0}/></Card>
@@ -878,12 +878,12 @@ function ProfileTab({user,profile,setProfile,onLogout,lang,setLang,thm,setTheme}
       {!editing?<>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
           <Label style={{marginBottom:0}}>{t.infoSection}</Label>
-          <button onClick={()=>setEditing(true)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 12px",fontFamily:"'Plus Jakarta Sans'",fontSize:12,fontWeight:700,color:T.textS,cursor:"pointer"}}>✏️ Edit</button>
+          <button onClick={()=>setEditing(true)} style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 12px",fontFamily:"'DM Sans'",fontSize:12,fontWeight:700,color:T.textS,cursor:"pointer"}}>✏️ Edit</button>
         </div>
-        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:19,color:T.text,marginBottom:4}}>{profile.name}, {profile.age}</div>
-        <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textD,marginBottom:10}}>📍 {profile.city}</div>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textS,lineHeight:1.6,marginBottom:12}}>{profile.bio}</p>
-        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{profile.interests?.map(i=><span key={i} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontFamily:"'Plus Jakarta Sans'",fontWeight:600,background:T.accentSoft,color:T.accent}}>{i}</span>)}</div>
+        <div style={{fontFamily:"'Fraunces',serif",fontSize:19,color:T.text,marginBottom:4}}>{profile.name}, {profile.age}</div>
+        <div style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textD,marginBottom:10}}>📍 {profile.city}</div>
+        <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textS,lineHeight:1.6,marginBottom:12}}>{profile.bio}</p>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{profile.interests?.map(i=><span key={i} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontFamily:"'DM Sans'",fontWeight:600,background:T.accentSoft,color:T.accent}}>{i}</span>)}</div>
       </>:<>
         <input value={nm} onChange={e=>setNm(e.target.value)} placeholder={t.firstName} style={inp}/>
         <div style={{display:"flex",gap:8}}>
@@ -894,20 +894,20 @@ function ProfileTab({user,profile,setProfile,onLogout,lang,setLang,thm,setTheme}
           </div>
         </div>
         <textarea value={bi} onChange={e=>setBi(e.target.value.slice(0,150))} rows={3} style={{...inp,resize:"none"}}/>
-        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>{ints.map(tag=>{const a=it.includes(tag);return<button key={tag} onClick={()=>setIt(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"6px 12px",borderRadius:16,fontSize:12,fontFamily:"'Plus Jakarta Sans'",fontWeight:600,cursor:"pointer",border:`1px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS}}>{tag}</button>;})}</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>{ints.map(tag=>{const a=it.includes(tag);return<button key={tag} onClick={()=>setIt(p=>a?p.filter(x=>x!==tag):p.length<5?[...p,tag]:p)} style={{padding:"6px 12px",borderRadius:16,fontSize:12,fontFamily:"'DM Sans'",fontWeight:600,cursor:"pointer",border:`1px solid ${a?T.accent:T.border}`,background:a?T.accentSoft:"transparent",color:a?T.accent:T.textS}}>{tag}</button>;})}</div>
         <div style={{display:"flex",gap:8}}><Btn full onClick={save} disabled={saving}>{saving?"…":t.save}</Btn><Btn variant="ghost" onClick={()=>setEditing(false)}>✕</Btn></div>
       </>}
     </Card>
     <Card style={{padding:20,marginBottom:14}}>
       <Label>{t.settings}</Label>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:600,color:T.text}}>{t.language}</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:14,fontWeight:600,color:T.text}}>{t.language}</span>
         <div style={{display:"flex",background:T.surfAlt,borderRadius:12,padding:3,gap:2}}>
           {["en","fr"].map(l=><button key={l} onClick={()=>setLang(l)} style={pill(lang===l)}>{l.toUpperCase()}</button>)}
         </div>
       </div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:600,color:T.text}}>{t.theme}</span>
+        <span style={{fontFamily:"'DM Sans'",fontSize:14,fontWeight:600,color:T.text}}>{t.theme}</span>
         <div style={{display:"flex",background:T.surfAlt,borderRadius:12,padding:3,gap:2}}>
           {[["dark","🌙"],["light","☀️"]].map(([v,icon])=><button key={v} onClick={()=>setTheme(v)} style={pill(thm===v)}>{icon}</button>)}
         </div>
@@ -1012,27 +1012,27 @@ function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport,la
 
     <div style={{padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${T.border}`,background:T.surface,flexShrink:0}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{width:38,height:38,borderRadius:12,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:900,color:"#fff",fontFamily:"'Plus Jakarta Sans'"}}>?</div>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:700,color:T.text}}>{t.unknown}</span>
+        <div style={{width:38,height:38,borderRadius:12,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:900,color:"#fff",fontFamily:"'DM Sans'"}}>?</div>
+        <span style={{fontFamily:"'DM Sans'",fontSize:14,fontWeight:700,color:T.text}}>{t.unknown}</span>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <button onClick={()=>setShowReport(true)} style={{background:"none",border:"none",fontSize:14,cursor:"pointer",color:T.textD}}>🚩</button>
         <div style={{width:72,height:5,borderRadius:3,background:T.border,overflow:"hidden"}}>
           <div style={{width:`${Math.min((timeLeft/CHAT_DUR)*100,100)}%`,height:"100%",borderRadius:3,background:timeLeft<=10?T.danger:T.accentGrad,transition:"width .5s"}}/>
         </div>
-        <span style={{fontFamily:"'Plus Jakarta Sans'",fontWeight:800,fontSize:13,color:timeLeft<=10?T.danger:T.accent,minWidth:28,textAlign:"right"}}>{timeLeft}s</span>
+        <span style={{fontFamily:"'DM Sans'",fontWeight:800,fontSize:13,color:timeLeft<=10?T.danger:T.accent,minWidth:28,textAlign:"right"}}>{timeLeft}s</span>
       </div>
     </div>
 
     <div style={{display:"flex",gap:6,padding:"8px 12px",overflowX:"auto",borderBottom:`1px solid ${T.border}`,background:T.surfAlt,flexShrink:0}}>
-      {bonusTypes.map(b=>{const c=bonuses[b.id]||0;return<button key={b.id} disabled={c<=0} onClick={()=>useBonus(b.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:10,border:`1px solid ${c>0?T.gold+"44":T.border}`,background:c>0?T.goldSoft:"transparent",cursor:c>0?"pointer":"default",opacity:c>0?1:0.35,whiteSpace:"nowrap",flexShrink:0,fontFamily:"'Plus Jakarta Sans'",fontSize:12,fontWeight:700,color:c>0?T.gold:T.textD}}>
+      {bonusTypes.map(b=>{const c=bonuses[b.id]||0;return<button key={b.id} disabled={c<=0} onClick={()=>useBonus(b.id)} style={{display:"flex",alignItems:"center",gap:4,padding:"6px 12px",borderRadius:10,border:`1px solid ${c>0?T.gold+"44":T.border}`,background:c>0?T.goldSoft:"transparent",cursor:c>0?"pointer":"default",opacity:c>0?1:0.35,whiteSpace:"nowrap",flexShrink:0,fontFamily:"'DM Sans'",fontSize:12,fontWeight:700,color:c>0?T.gold:T.textD}}>
         <span>{b.icon}</span><span>{b.name}</span><span style={{marginLeft:3,opacity:.7}}>{c}</span>
       </button>;})}
     </div>
 
     {challenge&&<div style={{margin:"8px 12px",padding:"14px 16px",borderRadius:16,background:`${T.sec}10`,border:`1.5px solid ${T.sec}30`,animation:"scaleIn .2s ease",flexShrink:0}}>
-      <div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:11,fontWeight:800,color:T.sec,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{t.challengeTitle}</div>
-      <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.text,lineHeight:1.5,marginBottom:12}}>{challenge}</p>
+      <div style={{fontFamily:"'DM Sans'",fontSize:11,fontWeight:800,color:T.sec,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{t.challengeTitle}</div>
+      <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.text,lineHeight:1.5,marginBottom:12}}>{challenge}</p>
       <div style={{display:"flex",gap:8}}>
         <Btn onClick={acceptChallenge} style={{flex:1,padding:"9px 14px",fontSize:12}}>{t.challengeAccept}</Btn>
         <Btn variant="ghost" onClick={()=>setChallenge(null)} style={{flex:1,padding:"9px 14px",fontSize:12}}>{t.challengeSkip}</Btn>
@@ -1040,19 +1040,19 @@ function BlindChat({chatId,myUid,partner,bonuses,onUseBonus,onTimeUp,onReport,la
     </div>}
 
     <div ref={scrollRef} style={{flex:1,overflowY:"auto",padding:16}}>
-      {msgs.length===0&&reveals.length===0&&<div style={{textAlign:"center",padding:40,fontFamily:"'Plus Jakarta Sans'",color:T.textD,fontSize:14}}>{t.iceBreak}</div>}
-      {reveals.map((r,i)=><div key={"r"+i} style={{textAlign:"center",margin:"6px 0",padding:"8px 14px",borderRadius:14,background:T.goldSoft,border:`1px solid ${T.gold}33`,fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:600,color:T.gold}}>{r}</div>)}
+      {msgs.length===0&&reveals.length===0&&<div style={{textAlign:"center",padding:40,fontFamily:"'DM Sans'",color:T.textD,fontSize:14}}>{t.iceBreak}</div>}
+      {reveals.map((r,i)=><div key={"r"+i} style={{textAlign:"center",margin:"6px 0",padding:"8px 14px",borderRadius:14,background:T.goldSoft,border:`1px solid ${T.gold}33`,fontFamily:"'DM Sans'",fontSize:13,fontWeight:600,color:T.gold}}>{r}</div>)}
       {msgs.map(m=>{
         const mine=m.senderId===myUid;const sys=m.senderId==="system";
-        if(sys)return<div key={m.id} style={{display:"flex",justifyContent:"center",marginBottom:8}}><div style={{padding:"8px 16px",borderRadius:14,background:`${T.sec}12`,border:`1px solid ${T.sec}22`,fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.sec,fontWeight:600}}>{m.text}</div></div>;
+        if(sys)return<div key={m.id} style={{display:"flex",justifyContent:"center",marginBottom:8}}><div style={{padding:"8px 16px",borderRadius:14,background:`${T.sec}12`,border:`1px solid ${T.sec}22`,fontFamily:"'DM Sans'",fontSize:12,color:T.sec,fontWeight:600}}>{m.text}</div></div>;
         return<div key={m.id} style={{display:"flex",justifyContent:mine?"flex-end":"flex-start",marginBottom:8}}>
-          <div style={{maxWidth:"72%",padding:"10px 15px",borderRadius:18,borderBottomRightRadius:mine?4:18,borderBottomLeftRadius:mine?18:4,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'Plus Jakarta Sans'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
+          <div style={{maxWidth:"72%",padding:"10px 15px",borderRadius:18,borderBottomRightRadius:mine?4:18,borderBottomLeftRadius:mine?18:4,background:mine?T.accentGrad:T.surfAlt,color:mine?"#fff":T.text,fontSize:14,lineHeight:1.5,fontFamily:"'DM Sans'",boxShadow:mine?`0 3px 12px ${T.accentGlow}`:"none"}}>{m.text}</div>
         </div>;
       })}
     </div>
 
     <div style={{padding:"8px 12px",borderTop:`1px solid ${T.border}`,background:T.surface,display:"flex",gap:8,flexShrink:0}}>
-      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={t.typeMessage} autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'Plus Jakarta Sans'",outline:"none"}}/>
+      <input ref={inputRef} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder={t.typeMessage} autoFocus style={{flex:1,padding:"11px 16px",borderRadius:14,background:T.input,border:`1.5px solid ${T.border}`,color:T.text,fontSize:14,fontFamily:"'DM Sans'",outline:"none"}}/>
       <button onClick={send} style={{width:44,height:44,borderRadius:12,border:"none",background:text.trim()?T.accentGrad:T.border,color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"background .2s"}}>↑</button>
     </div>
   </div>;
@@ -1200,16 +1200,23 @@ export default function App() {
     // Re-enter room if user comes back from background (mobile fix)
     document.addEventListener('visibilitychange',handleVisibility);
 
-    // Primary: listen to own waitingRoom doc — gets signalled directly by the matcher
-    selfUnsub=onSnapshot(doc(db,"waitingRoom",myUid),async snap=>{
-      if(!snap.exists()||matched)return;
-      const d=snap.data();
-      if(d.status==="matched"&&d.chatId&&d.matchedWith){
-        await goToChat(d.chatId,d.matchedWith);
+    // Both users listen for a blindChat that includes them — no cross-user write needed
+    selfUnsub=onSnapshot(
+      query(collection(db,"blindChats"),where("users","array-contains",myUid)),
+      async snap=>{
+        if(matched)return;
+        const active=snap.docs.find(d=>{
+          const data=d.data();
+          return data.status==="active"&&data.endTime&&new Date(data.endTime)>new Date();
+        });
+        if(active){
+          const otherId=active.data().users.find(id=>id!==myUid);
+          if(otherId) await goToChat(active.id,otherId);
+        }
       }
-    });
+    );
 
-    // Matcher: user with smaller UID creates the chat and signals the other
+    // Only the user with smaller UID creates the chat doc — both discover it via selfUnsub above
     roomUnsub=onSnapshot(
       query(collection(db,"waitingRoom"),where("status","==","waiting")),
       async snap=>{
@@ -1219,20 +1226,17 @@ export default function App() {
           if(d.id===myUid)return false;
           const data=d.data();
           if(data.status!=="waiting")return false;
-          if(data.ts&&now-data.ts>90000)return false; // ignore stale entries (mobile disconnects)
+          if(data.ts&&now-data.ts>90000)return false; // ignore stale/offline entries
           if(!matchCompat(profile.gender,profile.orientation,data.gender,data.orientation))return false;
           return true;
         });
         if(!others.length)return;
         const otherId=others[0].id;
-        if(myUid>=otherId)return; // Only smaller UID creates chat
-        matched=true;done();
-        await deleteDoc(doc(db,"waitingRoom",myUid)).catch(()=>{});
+        if(myUid>=otherId)return; // Only smaller UID creates the chat
+        roomUnsub(); // Stop listening so we don't create duplicate chats
         const endTime=new Date(Date.now()+CHAT_DUR*1000).toISOString();
-        const chatRef=await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
-        // Signal the other user directly via their waitingRoom doc (no composite index needed)
-        await setDoc(doc(db,"waitingRoom",otherId),{uid:otherId,status:"matched",chatId:chatRef.id,matchedWith:myUid});
-        await goToChat(chatRef.id,otherId);
+        await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
+        // selfUnsub (blindChats listener) will fire for BOTH users and call goToChat
       }
     );
 
@@ -1308,7 +1312,7 @@ export default function App() {
     <LC.Provider value={{lang,t}}>
     <div style={{minHeight:"100vh",background:T.bg,backgroundImage:T.bgGrad,color:T.text,transition:"background .4s,color .4s"}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         body{background:${T.bg};-webkit-font-smoothing:antialiased}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:${T.border};border-radius:3px}
@@ -1337,8 +1341,8 @@ export default function App() {
 
       {screen==="waiting"&&<div style={center}>
         <div style={{width:56,height:56,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin 1s linear infinite",marginBottom:28}}/>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,color:T.text,margin:"0 0 8px"}}>{t.searching}</h2>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textD,marginBottom:4}}>{t.waitingPlayer}</p>
+        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:22,color:T.text,margin:"0 0 8px"}}>{t.searching}</h2>
+        <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textD,marginBottom:4}}>{t.waitingPlayer}</p>
         <Btn variant="ghost" onClick={cancelWaiting} style={{marginTop:24}}>{t.cancelBtn}</Btn>
       </div>}
 
@@ -1346,43 +1350,43 @@ export default function App() {
 
       {screen==="decision"&&<div style={{...center,animation:"fadeIn .4s"}}>
         <div style={{width:72,height:72,borderRadius:24,background:T.accentGrad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:24,boxShadow:`0 8px 36px ${T.accentGlow}`,animation:"float 2s ease-in-out infinite"}}>⏰</div>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:T.text,margin:"0 0 10px"}}>{t.timeUp}</h2>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,color:T.textS,marginBottom:16}}>{t.revealQ}</p>
-        {compatibility!==null&&<div style={{padding:"8px 22px",borderRadius:20,background:T.accentSoft,border:`1px solid ${T.accent}33`,fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:800,color:T.accent,marginBottom:28}}>{t.compatScore(compatibility)}</div>}
+        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:28,color:T.text,margin:"0 0 10px"}}>{t.timeUp}</h2>
+        <p style={{fontFamily:"'DM Sans'",fontSize:14,color:T.textS,marginBottom:16}}>{t.revealQ}</p>
+        {compatibility!==null&&<div style={{padding:"8px 22px",borderRadius:20,background:T.accentSoft,border:`1px solid ${T.accent}33`,fontFamily:"'DM Sans'",fontSize:13,fontWeight:800,color:T.accent,marginBottom:28}}>{t.compatScore(compatibility)}</div>}
         {compatibility===null&&<div style={{marginBottom:28}}/>}
         <div style={{display:"flex",gap:14,marginBottom:16}}>
           <Btn onClick={()=>decide("match")} style={{padding:"15px 32px",fontSize:15}}>{t.matchBtn}</Btn>
           <Btn variant="ghost" onClick={()=>decide("pass")} style={{padding:"15px 32px",fontSize:15}}>{t.passBtn}</Btn>
         </div>
         {canSuperLike(profile)
-          ?<button onClick={()=>decide("superlike")} style={{background:`linear-gradient(135deg,#ff9e00,#ffbe0b)`,border:"none",borderRadius:16,padding:"12px 28px",fontFamily:"'Plus Jakarta Sans'",fontSize:14,fontWeight:800,color:"#000",cursor:"pointer",boxShadow:"0 6px 24px rgba(255,190,11,0.4)",letterSpacing:.3}}>⚡ {t.superLikeBtn} — Match garanti</button>
-          :<div style={{fontFamily:"'Plus Jakarta Sans'",fontSize:12,color:T.textD}}>{t.superLikeUsed}</div>}
+          ?<button onClick={()=>decide("superlike")} style={{background:`linear-gradient(135deg,#ff9e00,#ffbe0b)`,border:"none",borderRadius:16,padding:"12px 28px",fontFamily:"'DM Sans'",fontSize:14,fontWeight:800,color:"#000",cursor:"pointer",boxShadow:"0 6px 24px rgba(255,190,11,0.4)",letterSpacing:.3}}>⚡ {t.superLikeBtn} — Match garanti</button>
+          :<div style={{fontFamily:"'DM Sans'",fontSize:12,color:T.textD}}>{t.superLikeUsed}</div>}
       </div>}
 
       {screen==="waitDec"&&<div style={center}>
         <div style={{width:44,height:44,border:`3px solid ${T.border}`,borderTopColor:T.accent,borderRadius:"50%",animation:"spin 1s linear infinite",marginBottom:24}}/>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,color:T.text,margin:"0 0 8px"}}>{t.waitingDec}</h2>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textD,marginBottom:24}}>{t.otherDecides(DECISION_TIMEOUT)}</p>
+        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,color:T.text,margin:"0 0 8px"}}>{t.waitingDec}</h2>
+        <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textD,marginBottom:24}}>{t.otherDecides(DECISION_TIMEOUT)}</p>
         <Btn variant="ghost" onClick={()=>{runCleanup();setScreen("main");}}>{t.backBtn}</Btn>
       </div>}
 
       {screen==="matchReveal"&&otherProfile&&<div style={{position:"fixed",inset:0,zIndex:100,background:T.overlay,backdropFilter:"blur(24px)",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn .3s"}}>
         <div style={{textAlign:"center",padding:36,animation:"scaleIn .4s cubic-bezier(.34,1.56,.64,1)"}}>
           <div style={{fontSize:56,marginBottom:20,animation:"float 2s ease-in-out infinite"}}>💕</div>
-          <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:36,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 8px",letterSpacing:"-0.5px"}}>{t.matchTitle}</h2>
-          <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.gold,marginBottom:12,fontWeight:700}}>+{XP_MATCH} XP</p>
-          {compatibility!==null&&<div style={{display:"inline-block",padding:"6px 18px",borderRadius:20,background:T.accentSoft,fontFamily:"'Plus Jakarta Sans'",fontSize:13,fontWeight:800,color:T.accent,marginBottom:16}}>{t.compatScore(compatibility)}</div>}
+          <h2 style={{fontFamily:"'Fraunces',serif",fontSize:36,background:T.accentGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",margin:"0 0 8px",letterSpacing:"-0.5px"}}>{t.matchTitle}</h2>
+          <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.gold,marginBottom:12,fontWeight:700}}>+{XP_MATCH} XP</p>
+          {compatibility!==null&&<div style={{display:"inline-block",padding:"6px 18px",borderRadius:20,background:T.accentSoft,fontFamily:"'DM Sans'",fontSize:13,fontWeight:800,color:T.accent,marginBottom:16}}>{t.compatScore(compatibility)}</div>}
           {otherProfile.photos?.[0]&&<img src={otherProfile.photos[0]} style={{width:110,height:110,borderRadius:"50%",objectFit:"cover",border:`3px solid ${T.accent}`,boxShadow:`0 0 60px ${T.accentGlow}`,marginBottom:14,display:"block",margin:"0 auto 14px"}}/>}
-          <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:T.text,marginBottom:4}}>{otherProfile.name}, {otherProfile.age}</p>
-          <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:13,color:T.textD,marginBottom:28}}>📍 {otherProfile.city}</p>
+          <p style={{fontFamily:"'Fraunces',serif",fontSize:18,color:T.text,marginBottom:4}}>{otherProfile.name}, {otherProfile.age}</p>
+          <p style={{fontFamily:"'DM Sans'",fontSize:13,color:T.textD,marginBottom:28}}>📍 {otherProfile.city}</p>
           <Btn onClick={()=>{listenMatches(user.uid);setScreen("main");setTab("matches");}}>{t.great}</Btn>
         </div>
       </div>}
 
       {screen==="noMatch"&&<div style={{...center,animation:"fadeIn .4s"}}>
         <div style={{width:72,height:72,borderRadius:24,background:T.surfAlt,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,marginBottom:24}}>😔</div>
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,color:T.text,margin:"0 0 10px"}}>{t.noMatchTitle}</h2>
-        <p style={{fontFamily:"'Plus Jakarta Sans'",fontSize:14,color:T.textS,marginBottom:32}}>{t.noMatchSub}</p>
+        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:26,color:T.text,margin:"0 0 10px"}}>{t.noMatchTitle}</h2>
+        <p style={{fontFamily:"'DM Sans'",fontSize:14,color:T.textS,marginBottom:32}}>{t.noMatchSub}</p>
         <Btn onClick={()=>setScreen("main")}>{t.retry}</Btn>
       </div>}
     </div>
