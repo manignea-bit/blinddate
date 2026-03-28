@@ -1217,12 +1217,23 @@ export default function App() {
       err=>console.error("[blinddate] blindChats listener error:",err.code,err.message)
     );
 
-    // Only the user with smaller UID creates the chat doc — both discover it via selfUnsub above
+    // Only the user with smaller UID creates the chat doc, then notifies the other user
+    // directly via their waitingRoom doc (more reliable than array-contains query on mobile)
     function setupRoomListener(){
       const unsub=onSnapshot(
         query(collection(db,"waitingRoom"),where("status","==","waiting")),
         async snap=>{
           if(matched)return;
+
+          // Check if we were directly notified of a match via our own waitingRoom doc
+          const myDoc=snap.docs.find(d=>d.id===myUid);
+          if(myDoc&&myDoc.data().chatId&&myDoc.data().chatPartner){
+            const {chatId:cid,chatPartner:pid}=myDoc.data();
+            unsub();roomUnsub=()=>{};
+            if(!matched)await goToChat(cid,pid);
+            return;
+          }
+
           const now=Date.now();
           const others=snap.docs.filter(d=>{
             if(d.id===myUid)return false;
@@ -1238,8 +1249,11 @@ export default function App() {
           unsub();roomUnsub=()=>{};
           try{
             const endTime=new Date(Date.now()+CHAT_DUR*1000).toISOString();
-            await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
-            // selfUnsub (blindChats listener) will fire for BOTH users and call goToChat
+            const chatRef=await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
+            // Notify the other user directly via their waitingRoom doc
+            await updateDoc(doc(db,"waitingRoom",otherId),{chatId:chatRef.id,chatPartner:myUid}).catch(e=>console.error("[blinddate] notify partner error:",e.code,e.message));
+            // Also go to chat directly without waiting for selfUnsub
+            if(!matched)await goToChat(chatRef.id,otherId);
           }catch(e){
             console.error("[blinddate] blindChat creation error:",e.code,e.message);
             if(!matched)setupRoomListener(); // re-listen and retry on failure
