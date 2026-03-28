@@ -1159,7 +1159,7 @@ export default function App() {
     if(count>=DAILY_LIMIT){alert(t.dailyLimitReached);return;}
     setScreen("waiting");setCompatibility(null);
     const myUid=user.uid;let matched=false;
-    let roomUnsub=()=>{};let selfUnsub=()=>{};let tmout;let heartbeat;
+    let roomUnsub=()=>{};let tmout;let heartbeat;
 
     function handleVisibility(){
       if(document.visibilityState==='visible'&&!matched){
@@ -1167,7 +1167,7 @@ export default function App() {
       }
     }
     function done(){
-      roomUnsub();selfUnsub();clearTimeout(tmout);clearInterval(heartbeat);
+      roomUnsub();clearTimeout(tmout);clearInterval(heartbeat);
       document.removeEventListener('visibilitychange',handleVisibility);
     }
 
@@ -1200,32 +1200,14 @@ export default function App() {
     // Re-enter room if user comes back from background (mobile fix)
     document.addEventListener('visibilitychange',handleVisibility);
 
-    // Both users listen for a blindChat that includes them — no cross-user write needed
-    selfUnsub=onSnapshot(
-      query(collection(db,"blindChats"),where("users","array-contains",myUid)),
-      async snap=>{
-        if(matched)return;
-        const active=snap.docs.find(d=>{
-          const data=d.data();
-          return data.status==="active"&&data.endTime&&new Date(data.endTime)>new Date();
-        });
-        if(active){
-          const otherId=active.data().users.find(id=>id!==myUid);
-          if(otherId) await goToChat(active.id,otherId);
-        }
-      },
-      err=>console.error("[blinddate] blindChats listener error:",err.code,err.message)
-    );
-
-    // Only the user with smaller UID creates the chat doc, then notifies the other user
-    // directly via their waitingRoom doc (more reliable than array-contains query on mobile)
+    // Listen to the entire waitingRoom collection — no index needed, filter in JS
     function setupRoomListener(){
       const unsub=onSnapshot(
-        query(collection(db,"waitingRoom"),where("status","==","waiting")),
+        collection(db,"waitingRoom"),
         async snap=>{
           if(matched)return;
 
-          // Check if we were directly notified of a match via our own waitingRoom doc
+          // Check if we were directly notified of a match via our own doc
           const myDoc=snap.docs.find(d=>d.id===myUid);
           if(myDoc&&myDoc.data().chatId&&myDoc.data().chatPartner){
             const {chatId:cid,chatPartner:pid}=myDoc.data();
@@ -1239,7 +1221,7 @@ export default function App() {
             if(d.id===myUid)return false;
             const data=d.data();
             if(data.status!=="waiting")return false;
-            if(data.ts&&now-data.ts>90000)return false; // ignore stale/offline entries
+            if(data.ts&&now-data.ts>90000)return false;
             if(!matchCompat(profile.gender,profile.orientation,data.gender,data.orientation))return false;
             return true;
           });
@@ -1250,13 +1232,12 @@ export default function App() {
           try{
             const endTime=new Date(Date.now()+CHAT_DUR*1000).toISOString();
             const chatRef=await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
-            // Notify the other user directly via their waitingRoom doc
+            // Notify partner directly via their waitingRoom doc — reliable on all devices
             await updateDoc(doc(db,"waitingRoom",otherId),{chatId:chatRef.id,chatPartner:myUid}).catch(e=>console.error("[blinddate] notify partner error:",e.code,e.message));
-            // Also go to chat directly without waiting for selfUnsub
             if(!matched)await goToChat(chatRef.id,otherId);
           }catch(e){
             console.error("[blinddate] blindChat creation error:",e.code,e.message);
-            if(!matched)setupRoomListener(); // re-listen and retry on failure
+            if(!matched)setupRoomListener();
           }
         },
         err=>console.error("[blinddate] waitingRoom listener error:",err.code,err.message)
