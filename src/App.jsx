@@ -1213,32 +1213,43 @@ export default function App() {
           const otherId=active.data().users.find(id=>id!==myUid);
           if(otherId) await goToChat(active.id,otherId);
         }
-      }
+      },
+      err=>console.error("[blinddate] blindChats listener error:",err.code,err.message)
     );
 
     // Only the user with smaller UID creates the chat doc — both discover it via selfUnsub above
-    roomUnsub=onSnapshot(
-      query(collection(db,"waitingRoom"),where("status","==","waiting")),
-      async snap=>{
-        if(matched)return;
-        const now=Date.now();
-        const others=snap.docs.filter(d=>{
-          if(d.id===myUid)return false;
-          const data=d.data();
-          if(data.status!=="waiting")return false;
-          if(data.ts&&now-data.ts>90000)return false; // ignore stale/offline entries
-          if(!matchCompat(profile.gender,profile.orientation,data.gender,data.orientation))return false;
-          return true;
-        });
-        if(!others.length)return;
-        const otherId=others[0].id;
-        if(myUid>=otherId)return; // Only smaller UID creates the chat
-        roomUnsub(); // Stop listening so we don't create duplicate chats
-        const endTime=new Date(Date.now()+CHAT_DUR*1000).toISOString();
-        await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
-        // selfUnsub (blindChats listener) will fire for BOTH users and call goToChat
-      }
-    );
+    function setupRoomListener(){
+      const unsub=onSnapshot(
+        query(collection(db,"waitingRoom"),where("status","==","waiting")),
+        async snap=>{
+          if(matched)return;
+          const now=Date.now();
+          const others=snap.docs.filter(d=>{
+            if(d.id===myUid)return false;
+            const data=d.data();
+            if(data.status!=="waiting")return false;
+            if(data.ts&&now-data.ts>90000)return false; // ignore stale/offline entries
+            if(!matchCompat(profile.gender,profile.orientation,data.gender,data.orientation))return false;
+            return true;
+          });
+          if(!others.length)return;
+          const otherId=others[0].id;
+          if(myUid>=otherId)return; // Only smaller UID creates the chat
+          unsub();roomUnsub=()=>{};
+          try{
+            const endTime=new Date(Date.now()+CHAT_DUR*1000).toISOString();
+            await addDoc(collection(db,"blindChats"),{users:[myUid,otherId],status:"active",user1Decision:null,user2Decision:null,endTime,createdAt:serverTimestamp()});
+            // selfUnsub (blindChats listener) will fire for BOTH users and call goToChat
+          }catch(e){
+            console.error("[blinddate] blindChat creation error:",e.code,e.message);
+            if(!matched)setupRoomListener(); // re-listen and retry on failure
+          }
+        },
+        err=>console.error("[blinddate] waitingRoom listener error:",err.code,err.message)
+      );
+      roomUnsub=unsub;
+    }
+    setupRoomListener();
 
     tmout=setTimeout(()=>{
       if(matched)return;done();
