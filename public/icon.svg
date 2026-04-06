@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="45%" stop-color="#db2777"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#fde68a" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
+  <!-- Subtle inner glow -->
+  <rect width="512" height="512" rx="110" fill="radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent 60%)"/>
+  <!-- Left person dot -->
+  <circle cx="162" cy="210" r="38" fill="rgba(255,255,255,0.22)"/>
+  <!-- Right person dot -->
+  <circle cx="350" cy="210" r="38" fill="rgba(255,255,255,0.22)"/>
+  <!-- Heart -->
+  <path d="M256 342 C256 342 148 276 148 208 C148 176 172 154 200 154 C222 154 242 166 256 184 C270 166 290 154 312 154 C340 154 364 176 364 208 C364 276 256 342 256 342Z" fill="url(#spark)"/>
+  <!-- Blindfold line across the dots -->
+  <rect x="120" y="196" width="80" height="14" rx="7" fill="rgba(255,255,255,0.5)"/>
+  <rect x="312" y="196" width="80" height="14" rx="7" fill="rgba(255,255,255,0.5)"/>
+</svg>
