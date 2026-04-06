@@ -32,10 +32,19 @@ export default async function handler(req, res) {
   const { userId, title, body: msgBody, url, tag } = body;
   if (!userId) return res.status(400).json({ error: "userId required" });
 
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
   try {
-    const snap = await db.collection("users").doc(userId).get();
-    const pushSub = snap.data()?.pushSubscription;
+    const userRef = db.collection("users").doc(userId);
+    const snap = await userRef.get();
+    const data = snap.data() || {};
+    const pushSub = data.pushSubscription;
     if (!pushSub) return res.json({ sent: false, reason: "no subscription" });
+
+    // Max 2 push notifications per day per user
+    const pt = data.pushToday || {};
+    const todayCount = pt.date === today ? (pt.count || 0) : 0;
+    if (todayCount >= 2) return res.json({ sent: false, reason: "daily limit reached" });
 
     await webpush.sendNotification(pushSub, JSON.stringify({
       title: title || "BlindDate",
@@ -43,9 +52,12 @@ export default async function handler(req, res) {
       url: url || "/",
       tag: tag || "blinddate",
     }));
+
+    // Increment daily counter
+    await userRef.update({ pushToday: { date: today, count: todayCount + 1 } });
+
     res.json({ sent: true });
   } catch (e) {
-    // 410 Gone = subscription expired, clean it up
     if (e.statusCode === 410) {
       await db.collection("users").doc(userId).update({ pushSubscription: null }).catch(() => {});
     }

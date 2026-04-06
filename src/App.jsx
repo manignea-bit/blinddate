@@ -343,7 +343,7 @@ function NavBar({tab,setTab,n}) {
   const items=[{id:"home",label:t.homeNav,Icon:HomeIcon},{id:"matches",label:t.matchesNav,Icon:ChatIcon},{id:"extras",label:t.extrasNav,Icon:StarIcon},{id:"profile",label:t.profileNav,Icon:UserIcon}];
   const pillBg = T.name==="dark" ? "rgba(12,9,16,0.88)" : "rgba(255,255,255,0.9)";
   const pillBorder = T.name==="dark" ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.08)";
-  return <div style={{position:"fixed",bottom:18,left:"50%",transform:"translateX(-50%)",zIndex:50,background:pillBg,backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRadius:32,border:pillBorder,display:"flex",padding:6,boxShadow:T.name==="dark"?"0 8px 40px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.04)":"0 8px 40px rgba(0,0,0,0.14)"}}>
+  return <div style={{position:"fixed",bottom:"calc(18px + var(--sab))",left:"50%",transform:"translateX(-50%)",zIndex:50,background:pillBg,backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRadius:32,border:pillBorder,display:"flex",padding:6,boxShadow:T.name==="dark"?"0 8px 40px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.04)":"0 8px 40px rgba(0,0,0,0.14)"}}>
     {items.map(({id,label,Icon})=>{
       const active=tab===id;
       return <button key={id} onClick={()=>setTab(id)} style={{background:active?T.accentGrad:"transparent",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:active?"8px 22px":"8px 16px",borderRadius:26,position:"relative",color:active?"#fff":T.textS,transition:"all .25s cubic-bezier(.34,1.56,.64,1)",boxShadow:active?`0 4px 18px ${T.accentGlow}`:"none"}}>
@@ -528,7 +528,7 @@ function GoldenHeartModal({user,profile,onClose,onActivated,lang}) {
   }
 
   return <div style={{position:"fixed",inset:0,zIndex:900,display:"flex",flexDirection:"column",animation:"fadeIn .25s"}}>
-    <div style={{flex:1,background:"linear-gradient(180deg,#1a0a00 0%,#0c0602 100%)",overflowY:"auto",padding:"28px 20px 140px"}}>
+    <div style={{flex:1,background:"linear-gradient(180deg,#1a0a00 0%,#0c0602 100%)",overflowY:"auto",padding:"calc(28px + var(--sat)) 20px 140px"}}>
       {/* close */}
       <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:22,lineHeight:1,marginBottom:20}}>✕</button>
 
@@ -1090,7 +1090,7 @@ function FullProfile({profile,onClose,superLikeContext}) {
   const ints=profile.interests||[];
 
   return <div style={{position:"fixed",inset:0,zIndex:1000,background:T.bg,overflowY:"auto",animation:"fadeIn .2s"}}>
-    <div style={{position:"sticky",top:0,zIndex:10,padding:"12px 16px",display:"flex",alignItems:"center",gap:10,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
+    <div style={{position:"sticky",top:0,zIndex:10,padding:"calc(12px + var(--sat)) 16px 12px",display:"flex",alignItems:"center",gap:10,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
       <button onClick={onClose} style={{background:"none",border:"none",color:T.textS,cursor:"pointer",padding:4,display:"flex"}}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
@@ -1600,7 +1600,7 @@ function BlindChat({chatId,myUid,partner,partnerUid,bonuses,onUseBonus,onTimeUp,
 
   const reasons=[t.inappropriate,t.spam,t.fakeProfile,t.harassment,t.other];
 
-  return <div style={{display:"flex",flexDirection:"column",height:"100vh",maxWidth:440,margin:"0 auto"}}>
+  return <div style={{display:"flex",flexDirection:"column",height:"calc(100dvh - var(--sat))",maxWidth:440,margin:"0 auto"}}>
     {showReport&&<ReportModal title={t.reportTitle} reasons={reasons} cancel={t.cancel} onReport={handleReport} onClose={()=>setShowReport(false)}/>}
     {selectedMsg&&<div onClick={()=>setSelectedMsg(null)} style={{position:"fixed",inset:0,zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.25)",backdropFilter:"blur(4px)"}}>
       <div onClick={e=>e.stopPropagation()} style={{display:"flex",gap:2,padding:"12px 14px",borderRadius:28,background:T.surface,border:`1px solid ${T.border}`,boxShadow:"0 12px 60px rgba(0,0,0,0.5)",animation:"scaleIn .15s ease"}}>
@@ -1679,7 +1679,7 @@ function BlindChat({chatId,myUid,partner,partnerUid,bonuses,onUseBonus,onTimeUp,
 
 function LegalModal({title,lastUpdate,children,onClose}){
   return <div style={{position:"fixed",inset:0,zIndex:3000,background:"#0d0710",overflowY:"auto",animation:"fadeIn .2s"}}>
-    <div style={{maxWidth:680,margin:"0 auto",padding:"24px 20px 80px"}}>
+    <div style={{maxWidth:680,margin:"0 auto",padding:"calc(24px + var(--sat)) 20px 80px"}}>
       <button onClick={onClose} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",color:"rgba(255,255,255,0.45)",cursor:"pointer",fontFamily:"'DM Sans'",fontSize:13,marginBottom:32,padding:0}}>← Retour</button>
       <h1 style={{fontFamily:"'Fraunces',serif",fontSize:28,fontWeight:700,color:"#fff",marginBottom:8}}>{title}</h1>
       <p style={{fontFamily:"'DM Sans'",fontSize:12,color:"rgba(255,255,255,0.25)",marginBottom:36}}>Dernière mise à jour : {lastUpdate}</p>
@@ -2389,7 +2389,7 @@ export default function App() {
 
   const isGH=profile?.goldenHeart?.active&&profile?.goldenHeart?.expiresAt?.toDate?.()>new Date();
   const activeLimit=isGH?DAILY_LIMIT_GOLD:DAILY_LIMIT;
-  const center={display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",padding:40,textAlign:"center"};
+  const center={display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"calc(100dvh - var(--sat))",padding:40,textAlign:"center"};
   const referralCode=user?user.uid.slice(0,8).toUpperCase():"";
 
   return <TC.Provider value={T}>
@@ -2397,6 +2397,7 @@ export default function App() {
     <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
+        :root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
         body{background:${T.bg};-webkit-font-smoothing:antialiased}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:${T.border};border-radius:3px}
         @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -2422,10 +2423,10 @@ export default function App() {
     {screen==="landing"
       ?<LandingScreen onStart={()=>setScreen("auth")} onLogin={()=>setScreen("auth")} onPrivacy={()=>setShowPrivacy(true)} onCGU={()=>setShowCGU(true)}/>
       :<div className="app-desktop" style={{minHeight:"100vh",background:T.bg,backgroundImage:T.bgGrad,color:T.text,transition:"background .4s,color .4s"}}>
-       <div className="app-frame" style={{minHeight:"100vh",background:T.bg,backgroundImage:T.bgGrad}}>
+       <div className="app-frame" style={{minHeight:"100vh",background:T.bg,backgroundImage:T.bgGrad,paddingTop:"var(--sat)",paddingBottom:"var(--sab)"}}>
       <div className="grain" aria-hidden="true"/>
 
-      {ghSuccess&&<div style={{position:"fixed",top:16,left:"50%",transform:"translateX(-50%)",zIndex:9999,padding:"14px 22px",borderRadius:18,background:"linear-gradient(135deg,#f59e0b,#fbbf24)",color:"#000",fontFamily:"'DM Sans'",fontSize:14,fontWeight:800,boxShadow:"0 8px 40px rgba(245,158,11,0.5)",display:"flex",alignItems:"center",gap:10,animation:"slideUp .4s ease",whiteSpace:"nowrap"}}>
+      {ghSuccess&&<div style={{position:"fixed",top:"calc(16px + var(--sat))",left:"50%",transform:"translateX(-50%)",zIndex:9999,padding:"14px 22px",borderRadius:18,background:"linear-gradient(135deg,#f59e0b,#fbbf24)",color:"#000",fontFamily:"'DM Sans'",fontSize:14,fontWeight:800,boxShadow:"0 8px 40px rgba(245,158,11,0.5)",display:"flex",alignItems:"center",gap:10,animation:"slideUp .4s ease",whiteSpace:"nowrap"}}>
         <span style={{fontSize:20}}>💛</span>
         <span>Golden Heart activé ! 30 jours de premium.</span>
         <button onClick={()=>setGhSuccess(false)} style={{background:"none",border:"none",color:"rgba(0,0,0,0.4)",cursor:"pointer",fontSize:16,marginLeft:4,lineHeight:1}}>✕</button>
