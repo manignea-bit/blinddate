@@ -1979,6 +1979,168 @@ function LandingScreen({onStart,onLogin,onPrivacy,onCGU}){
   </div>;
 }
 
+// ── PRE-LAUNCH ──
+
+const LAUNCH_DATE = new Date("2026-05-23T00:00:00");
+
+function PrelaunchScreen({onAdminUnlock}){
+  const [email,setEmail]=useState("");
+  const [submitted,setSubmitted]=useState(()=>{try{return localStorage.getItem("bd_waitlisted")==="1";}catch{return false;}});
+  const [loading,setLoading]=useState(false);
+  const [err,setErr]=useState("");
+  const [tl,setTl]=useState({d:0,h:0,m:0,s:0});
+  const [showAdmin,setShowAdmin]=useState(false);
+  const [adminCode,setAdminCode]=useState("");
+  const [adminErr,setAdminErr]=useState("");
+
+  useEffect(()=>{
+    function tick(){
+      const diff=LAUNCH_DATE-Date.now();
+      if(diff<=0){setTl({d:0,h:0,m:0,s:0});return;}
+      setTl({d:Math.floor(diff/86400000),h:Math.floor(diff%86400000/3600000),m:Math.floor(diff%3600000/60000),s:Math.floor(diff%60000/1000)});
+    }
+    tick();const iv=setInterval(tick,1000);return()=>clearInterval(iv);
+  },[]);
+
+  async function submit(e){
+    e.preventDefault();
+    const em=email.trim().toLowerCase();
+    if(!em||!em.includes("@")||!em.includes(".")){setErr("Email invalide");return;}
+    setLoading(true);
+    try{
+      await addDoc(collection(db,"waitlist"),{email:em,createdAt:serverTimestamp()});
+      localStorage.setItem("bd_waitlisted","1");
+      setSubmitted(true);
+    }catch{setErr("Erreur, réessaie.");}
+    setLoading(false);
+  }
+
+  function tryAdmin(){
+    if(adminCode==="adrien1715"){localStorage.setItem("bd_admin","true");onAdminUnlock();}
+    else{setAdminErr("Code incorrect");}
+  }
+
+  const pad=n=>String(n).padStart(2,"0");
+  const S={fontFamily:"'DM Sans',sans-serif"};
+  const serif={fontFamily:"'Fraunces',Georgia,serif"};
+
+  return <div style={{minHeight:"100dvh",background:"#07060c",backgroundImage:"radial-gradient(ellipse at 50% 0%,#1d0a2e 0%,#07060c 60%)",display:"flex",flexDirection:"column",alignItems:"center",padding:"calc(env(safe-area-inset-top,0px) + 32px) 20px calc(env(safe-area-inset-bottom,0px) + 48px)",overflowY:"auto",boxSizing:"border-box"}}>
+    <style>{`@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,700;9..40,800&display=swap');*{box-sizing:border-box;margin:0;padding:0}@keyframes pl-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}@keyframes pl-scale{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}@keyframes pl-fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}input::placeholder{color:rgba(237,233,248,0.3)}input:focus{border-color:rgba(232,25,75,0.5)!important}`}</style>
+
+    {/* Glow bg */}
+    <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",width:"100vw",height:400,background:"radial-gradient(ellipse at 50% 0%,rgba(232,25,75,0.12) 0%,transparent 70%)",pointerEvents:"none",zIndex:0}}/>
+
+    <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:400}}>
+
+      {/* Badge */}
+      <div style={{...S,marginBottom:28,padding:"5px 14px",borderRadius:20,border:"1px solid rgba(232,25,75,0.35)",background:"rgba(232,25,75,0.08)",fontSize:11,fontWeight:800,color:"#e8194b",textTransform:"uppercase",letterSpacing:1.5,animation:"pl-fade .6s ease both"}}>
+        Bientôt disponible · 23 mai 2026
+      </div>
+
+      {/* Logo */}
+      <h1 style={{...serif,fontSize:58,fontWeight:700,color:"#ede9f8",lineHeight:1,textAlign:"center",marginBottom:6,animation:"pl-fade .6s .1s ease both"}}>
+        BlindDate
+      </h1>
+      <p style={{...S,fontSize:16,fontWeight:700,color:"#e8194b",marginBottom:20,letterSpacing:0.5,animation:"pl-fade .6s .15s ease both"}}>
+        L'amour à l'aveugle.
+      </p>
+
+      {/* Accroche */}
+      <p style={{...serif,fontSize:20,fontStyle:"italic",color:"rgba(237,233,248,0.85)",textAlign:"center",lineHeight:1.6,marginBottom:36,animation:"pl-fade .6s .2s ease both"}}>
+        Et si la prochaine personne qui te fait vraiment vibrer, tu la reconnaissais à ses mots — avant même de voir son visage ?
+      </p>
+
+      {/* Valeur ajoutée */}
+      <div style={{display:"flex",flexDirection:"column",gap:12,width:"100%",marginBottom:36,animation:"pl-fade .6s .25s ease both"}}>
+        {[
+          {e:"🎭",t:"Anonyme par défaut",d:"Pas de photo, pas de profil visible. Tu parles librement. Ton identité se révèle seulement si c'est réciproque."},
+          {e:"⏱️",t:"60 secondes chrono",d:"Un blind date, une seule conversation. Pas de scroll infini, pas de ghosting. Juste l'essentiel."},
+          {e:"💘",t:"Match uniquement si vous deux le sentez",d:"À la fin, vous votez chacun de votre côté. Si c'est oui des deux côtés — les profils se débloquent. Sinon, ça reste secret."},
+        ].map((v,i)=>(
+          <div key={i} style={{display:"flex",gap:14,padding:"15px 16px",borderRadius:18,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)"}}>
+            <span style={{fontSize:22,flexShrink:0,lineHeight:1.3}}>{v.e}</span>
+            <div>
+              <div style={{...S,fontSize:14,fontWeight:800,color:"#ede9f8",marginBottom:3}}>{v.t}</div>
+              <div style={{...S,fontSize:13,color:"rgba(237,233,248,0.5)",lineHeight:1.5}}>{v.d}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Countdown */}
+      <div style={{marginBottom:28,textAlign:"center",animation:"pl-fade .6s .3s ease both"}}>
+        <div style={{...S,fontSize:10,fontWeight:800,color:"rgba(237,233,248,0.35)",textTransform:"uppercase",letterSpacing:1.8,marginBottom:14}}>Ouverture dans</div>
+        <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+          {[{v:tl.d,l:"jours"},{v:tl.h,l:"heures"},{v:tl.m,l:"min"},{v:tl.s,l:"sec"}].map((x,i)=>(
+            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+              <div style={{width:60,height:60,borderRadius:14,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.09)",display:"flex",alignItems:"center",justifyContent:"center",...serif,fontSize:24,fontWeight:700,color:"#ede9f8"}}>
+                {pad(x.v)}
+              </div>
+              <span style={{...S,fontSize:9,color:"rgba(237,233,248,0.3)",fontWeight:700,textTransform:"uppercase",letterSpacing:0.8}}>{x.l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Gold badge */}
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 16px",borderRadius:14,background:"rgba(245,158,11,0.09)",border:"1px solid rgba(245,158,11,0.28)",marginBottom:20,width:"100%",animation:"pl-fade .6s .35s ease both"}}>
+        <span style={{fontSize:22,animation:"pl-float 2.5s ease-in-out infinite",display:"block"}}>💛</span>
+        <div>
+          <div style={{...S,fontSize:13,fontWeight:800,color:"#fbbf24",marginBottom:2}}>1 semaine de Golden Heart offerte</div>
+          <div style={{...S,fontSize:12,color:"rgba(251,191,36,0.6)",lineHeight:1.4}}>Pour tous les inscrits avant le 23 mai — accès illimité dès l'ouverture.</div>
+        </div>
+      </div>
+
+      {/* Form */}
+      {!submitted?(
+        <form onSubmit={submit} style={{width:"100%",display:"flex",flexDirection:"column",gap:10,animation:"pl-fade .6s .4s ease both"}}>
+          <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setErr("");}} placeholder="ton@email.com"
+            style={{width:"100%",padding:"16px 18px",borderRadius:16,border:`1.5px solid ${err?"#f87171":"rgba(255,255,255,0.1)"}`,background:"rgba(255,255,255,0.04)",color:"#ede9f8",...S,fontSize:15,outline:"none",transition:"border .2s",WebkitAppearance:"none",appearance:"none"}}/>
+          {err&&<p style={{...S,fontSize:12,color:"#f87171",margin:0,paddingLeft:2}}>{err}</p>}
+          <button type="submit" disabled={loading} style={{padding:"17px",borderRadius:18,border:"none",background:loading?"rgba(232,25,75,0.35)":"linear-gradient(135deg,#e8194b,#9d12d4)",color:"#fff",...S,fontSize:16,fontWeight:900,cursor:loading?"default":"pointer",boxShadow:loading?"none":"0 8px 40px rgba(232,25,75,0.4)",letterSpacing:0.3,transition:"all .2s"}}>
+            {loading?"...":"Je veux ma semaine offerte →"}
+          </button>
+          <p style={{...S,fontSize:11,color:"rgba(237,233,248,0.25)",textAlign:"center",margin:"2px 0 0",lineHeight:1.5}}>
+            Zéro spam. Un seul mail le jour de l'ouverture.
+          </p>
+        </form>
+      ):(
+        <div style={{width:"100%",padding:"26px 22px",borderRadius:22,background:"rgba(232,25,75,0.07)",border:"1px solid rgba(232,25,75,0.2)",textAlign:"center",animation:"pl-scale .35s ease"}}>
+          <div style={{fontSize:38,marginBottom:12,animation:"pl-float 2.5s ease-in-out infinite",display:"block"}}>🎉</div>
+          <h3 style={{...serif,fontSize:20,color:"#ede9f8",margin:"0 0 8px"}}>Tu es sur la liste !</h3>
+          <p style={{...S,fontSize:13,color:"rgba(237,233,248,0.55)",lineHeight:1.7,margin:0}}>
+            Ta semaine Golden Heart est réservée.<br/>
+            On t'envoie un mail le 23 mai 🚀
+          </p>
+        </div>
+      )}
+
+      {/* Admin dot */}
+      <button onClick={()=>setShowAdmin(true)} style={{marginTop:56,...S,fontSize:11,color:"rgba(255,255,255,0.07)",background:"none",border:"none",cursor:"pointer",padding:"8px 4px",lineHeight:1}}>
+        ·
+      </button>
+    </div>
+
+    {/* Admin modal */}
+    {showAdmin&&<div style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(0,0,0,0.85)",backdropFilter:"blur(16px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{background:"#0e0d18",border:"1px solid rgba(255,255,255,0.1)",borderRadius:22,padding:"28px 24px",maxWidth:290,width:"100%",animation:"pl-scale .25s ease"}}>
+        <h3 style={{...serif,fontSize:18,color:"#ede9f8",margin:"0 0 18px",textAlign:"center"}}>Accès admin</h3>
+        <input type="password" value={adminCode} onChange={e=>{setAdminCode(e.target.value);setAdminErr("");}} onKeyDown={e=>e.key==="Enter"&&tryAdmin()} placeholder="Code d'accès" autoFocus
+          style={{width:"100%",padding:"13px 15px",borderRadius:12,border:`1.5px solid ${adminErr?"#f87171":"rgba(255,255,255,0.1)"}`,background:"rgba(255,255,255,0.04)",color:"#ede9f8",...S,fontSize:14,outline:"none",marginBottom:adminErr?6:14,WebkitAppearance:"none"}}/>
+        {adminErr&&<p style={{...S,fontSize:12,color:"#f87171",margin:"0 0 10px",paddingLeft:2}}>{adminErr}</p>}
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>{setShowAdmin(false);setAdminCode("");setAdminErr("");}} style={{flex:1,padding:"12px",...S,fontSize:13,borderRadius:12,border:"1px solid rgba(255,255,255,0.1)",background:"transparent",color:"rgba(237,233,248,0.45)",cursor:"pointer"}}>
+            Annuler
+          </button>
+          <button onClick={tryAdmin} style={{flex:2,padding:"12px",...S,fontSize:14,fontWeight:800,borderRadius:12,border:"none",background:"linear-gradient(135deg,#e8194b,#9d12d4)",color:"#fff",cursor:"pointer"}}>
+            Entrer
+          </button>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+
 // ── PUSH NOTIFICATIONS ──
 
 const VAPID_PUBLIC_KEY = "BKXYvD7WKTuKJHquu8YKe-twPEfy0r76Na65lAtkvgAukAGLMnqdzNd9NqCebQuchh3VASHiuJHqvi16VBlG8IY";
@@ -2002,6 +2164,7 @@ function sendPushToUser(userId, title, body, url) {
 // ── MAIN APP ──
 
 export default function App() {
+  const [isAdminUnlocked,setIsAdminUnlocked]=useState(()=>{try{return localStorage.getItem("bd_admin")==="true";}catch{return false;}});
   const [thm,setThm]=useState(()=>{try{return localStorage.getItem("bd_theme")||(window.matchMedia?.("(prefers-color-scheme:light)").matches?"light":"dark");}catch{return"dark";}});
   const [lang,setLang]=useState(()=>{try{return localStorage.getItem("bd_lang")||"en";}catch{return"en";}});
   const T=thm==="dark"?dark:light;
@@ -2391,6 +2554,11 @@ export default function App() {
   const activeLimit=isGH?DAILY_LIMIT_GOLD:DAILY_LIMIT;
   const center={display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"calc(100dvh - var(--sat))",padding:40,textAlign:"center"};
   const referralCode=user?user.uid.slice(0,8).toUpperCase():"";
+
+  // Pre-launch gate: show until May 23 2026, bypass with admin code
+  if(!isAdminUnlocked&&Date.now()<LAUNCH_DATE.getTime()){
+    return <PrelaunchScreen onAdminUnlock={()=>setIsAdminUnlocked(true)}/>;
+  }
 
   return <TC.Provider value={T}>
     <LC.Provider value={{lang,t}}>
